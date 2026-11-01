@@ -71,6 +71,35 @@ class PublicInvitationAndRsvpTest extends TestCase
         $response->assertSeeText('Fulan');
     }
 
+    public function test_wedding_islami_template_renders_successfully(): void
+    {
+        $user = User::factory()->create();
+        $template = Template::where('blade_view', 'templates.wedding_islami')->firstOrFail();
+        $plan = Plan::first();
+
+        $invitation = Invitation::create([
+            'user_id' => $user->id,
+            'template_id' => $template->id,
+            'plan_id' => $plan->id,
+            'slug' => 'test-wedding-islami',
+            'category' => 'wedding',
+            'status' => 'published',
+            'published_at' => Carbon::now(),
+            'expires_at' => Carbon::now()->addDays(30),
+            'data' => [
+                'party1' => ['name' => 'Fulanah', 'full_name' => 'Siti Fulanah'],
+                'party2' => ['name' => 'Fulan', 'full_name' => 'Muhammad Fulan'],
+            ],
+        ]);
+
+        $response = $this->get(route('invitation.show', ['slug' => $invitation->slug]));
+        $response->assertStatus(200);
+        $response->assertSee('Walimatul', false);
+        $response->assertSeeText('Fulanah');
+        $response->assertSeeText('Fulan');
+        $response->assertSeeText('Ar-Rum');
+    }
+
     public function test_guest_can_submit_rsvp_and_congratulatory_wish(): void
     {
         $user = User::factory()->create();

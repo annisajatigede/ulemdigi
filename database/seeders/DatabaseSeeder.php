@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 3. Templates (Wedding Floral, Khitan Ceria, General Modern)
+        // 3. Templates (Wedding Floral, Khitan Ceria, General Modern, Wedding Islami)
         $templates = [
             [
                 'name' => 'Floral Romance',
@@ -129,6 +129,14 @@ class DatabaseSeeder extends Seeder
                 'style' => 'modern',
                 'thumbnail_path' => '/templates/thumbnails/general_modern.svg',
                 'blade_view' => 'templates.general_modern',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Islami Minimalis',
+                'category' => 'wedding',
+                'style' => 'islami',
+                'thumbnail_path' => '/templates/thumbnails/wedding_islami.svg',
+                'blade_view' => 'templates.wedding_islami',
                 'is_active' => true,
             ],
         ];
