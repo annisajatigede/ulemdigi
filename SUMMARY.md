@@ -10,6 +10,11 @@ Aplikasi web SaaS "Undangan Digital Berbayar" telah selesai dibangun dari nol hi
 - **Frontend**: Blade + Tailwind CSS + Alpine.js (desain mobile-first, animasi cover modal, floating audio player)
 - **Database**: MySQL `kawinan` (skema migrasi lengkap dengan foreign keys, JSON casts, dan SQLite in-memory untuk testing)
 - **Payment Gateway**: Midtrans Snap Sandbox dengan **Payment Gateway Adapter Pattern** (`PaymentGatewayInterface`, `MidtransPaymentGateway`, `XenditPaymentGateway`) serta webhook verification (SHA-512) dan testing simulator.
+- **Template Siap Pakai**: 4 Varian Template Desain Responsif:
+  1. `templates.wedding_floral` (Pernikahan Floral Romantis)
+  2. `templates.khitan_ceria` (Khitanan Anak Ceria & Penuh Warna)
+  3. `templates.general_modern` (Acara Formal/Umum Minimalis Elegan)
+  4. `templates.wedding_islami` (Pernikahan Islami Minimalis & Kaligrafi)
 - **Scheduler**: Command artisan `php artisan invitations:expire` harian di `routes/console.php`.
 
 ---
@@ -122,8 +127,8 @@ php artisan test
 
 Hasil verifikasi:
 ```text
-Tests:    35 passed (100 assertions)
-Duration: 2.80s
+Tests:    37 passed (108 assertions)
+Duration: ~2.6s
 Status:   100% GREEN (ALL PASS)
 ```
 Semua modul fitur (Autentikasi Breeze, Alur Checkout & Webhook Auto-Activation, Halaman Publik Undangan & RSVP, Personalisasi Tamu, Editor Publish Toggle, dan Expiration Artisan Command) teruji dengan sempurna.
