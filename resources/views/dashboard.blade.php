@@ -85,7 +85,7 @@
                                 <div>
                                     <!-- Header image / template thumbnail -->
                                     <div class="relative aspect-[16/9] bg-stone-200 overflow-hidden">
-                                        <img src="{{ $inv->template->thumbnail_path ?? '/templates/thumbnails/' . $inv->template->blade_view . '.svg' }}"
+                                        <img src="{{ $inv->template->thumbnail_url }}"
                                              alt="{{ $inv->template->name }}"
                                              class="w-full h-full object-cover">
 

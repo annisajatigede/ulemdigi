@@ -33,7 +33,7 @@
                                     <input type="radio" name="template_id" value="{{ $tmpl->id }}" {{ $template->id === $tmpl->id ? 'checked' : '' }} class="peer sr-only">
                                     <div class="p-4 rounded-2xl border-2 peer-checked:border-rose-600 peer-checked:bg-rose-50/30 transition-all border-stone-200 hover:border-stone-300">
                                         <div class="aspect-video bg-stone-100 rounded-xl overflow-hidden mb-3">
-                                            <img src="{{ $tmpl->thumbnail_path ?? '/templates/thumbnails/' . $tmpl->blade_view . '.svg' }}" alt="{{ $tmpl->name }}" class="w-full h-full object-cover">
+                                            <img src="{{ $tmpl->thumbnail_url }}" alt="{{ $tmpl->name }}" class="w-full h-full object-cover">
                                         </div>
                                         <div class="font-bold text-stone-900 text-sm">{{ $tmpl->name }}</div>
                                         <span class="text-[11px] text-stone-500 capitalize">{{ $tmpl->category }} • {{ $tmpl->style }}</span>

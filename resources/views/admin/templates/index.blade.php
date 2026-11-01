@@ -85,7 +85,7 @@
                         <div class="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden flex flex-col justify-between">
                             <div>
                                 <div class="aspect-video bg-stone-200 relative overflow-hidden">
-                                    <img src="{{ $t->thumbnail_path ?? '/templates/thumbnails/' . $t->blade_view . '.svg' }}" class="w-full h-full object-cover">
+                                    <img src="{{ $t->thumbnail_url }}" class="w-full h-full object-cover">
                                     <span class="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white {{ $t->category === 'wedding' ? 'bg-rose-600' : ($t->category === 'khitan' ? 'bg-sky-600' : 'bg-emerald-600') }}">
                                         {{ strtoupper($t->category) }}
                                     </span>

@@ -120,7 +120,7 @@
                     <div class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group">
                         <!-- Thumbnail Preview -->
                         <div class="relative aspect-[16/10] bg-stone-100 overflow-hidden">
-                            <img src="{{ $tmpl->thumbnail_path ?? '/templates/thumbnails/' . $tmpl->blade_view . '.svg' }}"
+                            <img src="{{ $tmpl->thumbnail_url }}"
                                  alt="{{ $tmpl->name }}"
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
 
