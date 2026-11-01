@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.2-fpm
+    container_name: kawinan_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: kawinan
+      DB_USERNAME: kawinan_user
+      DB_PASSWORD: kawinan_secret_password
+    depends_on:
+      - db
+
+  web:
+    image: nginx:alpine
+    container_name: kawinan_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: kawinan_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: kawinan
+      MYSQL_USER: kawinan_user
+      MYSQL_PASSWORD: kawinan_secret_password
+      MYSQL_ROOT_PASSWORD: root_secret_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - kawinan_mysql_data:/var/lib/mysql
+
+volumes:
+  kawinan_mysql_data:
+    driver: local
