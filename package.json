@@ -2,16 +2,19 @@
   "name": "kawinan",
   "version": "2.0.0",
   "private": true,
-  "description": "SaaS Platform Undangan Digital Berbayar (Kawinan.id) - Node.js + Vue 3",
+  "description": "SaaS Platform Undangan Digital Berbayar (Kawinan.id / UlemDigi) - Node.js + Vue 3",
   "scripts": {
+    "build": "node build.js",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:backend": "cd backend && npm install && npx prisma generate",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "build:frontend": "cd frontend && npm run build",
     "test:e2e": "node backend/test_suite.js",
     "start": "node backend/src/server.js"
   },
   "keywords": [
     "kawinan",
+    "ulemdigi",
     "undangan-digital",
     "express",
     "vue3",
