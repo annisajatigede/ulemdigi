@@ -520,15 +520,7 @@
         function invitationEditor() {
             return {
                 activeTab: 'dasar',
-                events: @json($invitation->events->map(fn($e) => [
-                    'title' => $e->title,
-                    'start_at' => $e->start_at->format('Y-m-d\TH:i'),
-                    'end_at' => $e->end_at ? $e->end_at->format('Y-m-d\TH:i') : '',
-                    'timezone' => $e->timezone,
-                    'venue_name' => $e->venue_name,
-                    'address' => $e->address,
-                    'maps_url' => $e->maps_url,
-                ])->toArray()),
+                events: @json($eventsData ?? []),
                 stories: @json($safeData['story'] ?? []),
                 gifts: @json($safeData['gifts'] ?? []),
 

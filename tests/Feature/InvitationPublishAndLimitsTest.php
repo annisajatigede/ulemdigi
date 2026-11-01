@@ -20,6 +20,29 @@ class InvitationPublishAndLimitsTest extends TestCase
         $this->seed();
     }
 
+    public function test_owner_can_access_editor_page_successfully(): void
+    {
+        $user = User::factory()->create();
+        $template = Template::first();
+        $plan = Plan::first();
+
+        $invitation = Invitation::create([
+            'user_id' => $user->id,
+            'template_id' => $template->id,
+            'plan_id' => $plan->id,
+            'slug' => 'test-editor-render',
+            'category' => 'wedding',
+            'status' => 'draft',
+            'expires_at' => Carbon::now()->addDays(30),
+            'data' => [],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('editor.edit', $invitation));
+        $response->assertStatus(200);
+        $response->assertSeeText('Editor Undangan');
+        $response->assertSeeText('Live Mobile Preview');
+    }
+
     public function test_owner_can_toggle_publish_status(): void
     {
         $user = User::factory()->create();

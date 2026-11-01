@@ -26,7 +26,19 @@ class InvitationEditorController extends Controller
         $templates = Template::where('is_active', true)->get();
         $safeData = $invitation->getSafeData();
 
-        return view('editor.index', compact('invitation', 'templates', 'safeData'));
+        $eventsData = $invitation->events->map(function ($e) {
+            return [
+                'title' => $e->title,
+                'start_at' => $e->start_at ? $e->start_at->format('Y-m-d\TH:i') : '',
+                'end_at' => $e->end_at ? $e->end_at->format('Y-m-d\TH:i') : '',
+                'timezone' => $e->timezone ?? 'WIB',
+                'venue_name' => $e->venue_name ?? '',
+                'address' => $e->address ?? '',
+                'maps_url' => $e->maps_url ?? '',
+            ];
+        })->values()->toArray();
+
+        return view('editor.index', compact('invitation', 'templates', 'safeData', 'eventsData'));
     }
 
     /**
