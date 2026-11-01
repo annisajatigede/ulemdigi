@@ -28,6 +28,9 @@
                         <x-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
                             {{ __('Templates') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.musics.index')" :active="request()->routeIs('admin.musics.*')">
+                            {{ __('Musik') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">
                             {{ __('Paket') }}
                         </x-nav-link>

@@ -56,8 +56,10 @@ class UpdateInvitationRequest extends FormRequest
             'party2_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
 
             'gallery_photos.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
-            'custom_music' => ['nullable', 'file', 'mimes:mp3,wav,ogg,m4a', 'max:8192'],
+            'music_source' => ['nullable', 'string', 'in:preset,custom,none'],
+            'preset_music_id' => ['nullable', 'integer', 'exists:musics,id'],
             'preset_music' => ['nullable', 'string'],
+            'custom_music' => ['nullable', 'file', 'mimes:mp3,wav,ogg,m4a', 'max:15360'],
 
             'events' => ['required', 'array', 'min:1'],
             'events.*.title' => ['required', 'string', 'max:120'],

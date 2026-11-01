@@ -43,10 +43,14 @@
             </div>
 
             <!-- SHORTCUT MENU -->
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
                 <a href="{{ route('admin.templates.index') }}" class="p-4 bg-white hover:bg-stone-50 border border-stone-200 rounded-2xl shadow-sm text-center transition-all">
                     <span class="text-xl block mb-1">🎨</span>
                     <span class="text-xs font-bold text-stone-800">Kelola Template</span>
+                </a>
+                <a href="{{ route('admin.musics.index') }}" class="p-4 bg-white hover:bg-stone-50 border border-stone-200 rounded-2xl shadow-sm text-center transition-all">
+                    <span class="text-xl block mb-1">🎵</span>
+                    <span class="text-xs font-bold text-stone-800">Pustaka Musik</span>
                 </a>
                 <a href="{{ route('admin.plans.index') }}" class="p-4 bg-white hover:bg-stone-50 border border-stone-200 rounded-2xl shadow-sm text-center transition-all">
                     <span class="text-xl block mb-1">🏷️</span>

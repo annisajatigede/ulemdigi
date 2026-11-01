@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Music;
 use App\Models\Plan;
 use App\Models\Setting;
 use App\Models\Template;
@@ -145,6 +146,49 @@ class DatabaseSeeder extends Seeder
             Template::updateOrCreate(
                 ['blade_view' => $tmpl['blade_view']],
                 $tmpl
+            );
+        }
+
+        // 4. Preset Musics (Provided by Admin)
+        $musics = [
+            [
+                'title' => 'Acoustic Romantic Waltz',
+                'artist' => 'Kawinan Music Studio',
+                'category' => 'wedding',
+                'file_path' => '/audio/wedding_romantic.mp3',
+                'is_active' => true,
+                'sort_order' => 1,
+            ],
+            [
+                'title' => 'Sholawat & Barakah Syahdu',
+                'artist' => 'Kawinan Islamic Melodies',
+                'category' => 'wedding',
+                'file_path' => '/audio/wedding_islami.mp3',
+                'is_active' => true,
+                'sort_order' => 2,
+            ],
+            [
+                'title' => 'Cheerful Joyful Kids Playground',
+                'artist' => 'Kawinan Kids Production',
+                'category' => 'khitan',
+                'file_path' => '/audio/khitan_ceria.mp3',
+                'is_active' => true,
+                'sort_order' => 3,
+            ],
+            [
+                'title' => 'Serene Piano Harmony',
+                'artist' => 'Kawinan Classical Ensemble',
+                'category' => 'general',
+                'file_path' => '/audio/general_piano.mp3',
+                'is_active' => true,
+                'sort_order' => 4,
+            ],
+        ];
+
+        foreach ($musics as $music) {
+            Music::updateOrCreate(
+                ['file_path' => $music['file_path']],
+                $music
             );
         }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateInvitationRequest;
 use App\Models\Invitation;
 use App\Models\InvitationEvent;
+use App\Models\Music;
 use App\Models\Template;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -25,6 +26,7 @@ class InvitationEditorController extends Controller
         $invitation->load(['template', 'plan', 'events']);
         $templates = Template::where('is_active', true)->get();
         $safeData = $invitation->getSafeData();
+        $presetMusics = Music::active()->orderBy('sort_order')->latest('id')->get();
 
         $eventsData = $invitation->events->map(function ($e) {
             return [
@@ -38,7 +40,7 @@ class InvitationEditorController extends Controller
             ];
         })->values()->toArray();
 
-        return view('editor.index', compact('invitation', 'templates', 'safeData', 'eventsData'));
+        return view('editor.index', compact('invitation', 'templates', 'presetMusics', 'safeData', 'eventsData'));
     }
 
     /**
@@ -69,11 +71,32 @@ class InvitationEditorController extends Controller
         }
 
         // 4. Handle Background Music
-        if ($request->hasFile('custom_music')) {
-            $path = $request->file('custom_music')->store('invitations/' . $invitation->id . '/music', 'public');
-            $currentData['music_path'] = '/storage/' . $path;
-        } elseif (! empty($request->input('preset_music'))) {
-            $currentData['music_path'] = $request->input('preset_music');
+        $musicSource = $request->input('music_source', 'preset');
+
+        if ($musicSource === 'none') {
+            $currentData['music_path'] = null;
+            $currentData['music_title'] = null;
+            $currentData['music_source'] = 'none';
+        } elseif ($musicSource === 'custom' || $request->hasFile('custom_music')) {
+            if ($request->hasFile('custom_music')) {
+                $path = $request->file('custom_music')->store('invitations/' . $invitation->id . '/music', 'public');
+                $currentData['music_path'] = '/storage/' . $path;
+                $currentData['music_title'] = $request->file('custom_music')->getClientOriginalName();
+            }
+            $currentData['music_source'] = 'custom';
+        } else {
+            // Preset mode (from Admin Library)
+            if ($request->filled('preset_music_id')) {
+                $preset = Music::find($request->input('preset_music_id'));
+                if ($preset) {
+                    $currentData['music_path'] = $preset->file_path;
+                    $currentData['music_title'] = $preset->title . ($preset->artist ? ' - ' . $preset->artist : '');
+                    $currentData['music_source'] = 'preset';
+                }
+            } elseif ($request->filled('preset_music')) {
+                $currentData['music_path'] = $request->input('preset_music');
+                $currentData['music_source'] = 'preset';
+            }
         }
 
         // 5. Handle Gallery Photos Upload

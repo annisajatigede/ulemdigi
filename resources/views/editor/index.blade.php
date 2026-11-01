@@ -146,14 +146,109 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold text-stone-700 mb-1">Musik Latar Belakang</label>
-                                <div class="space-y-2">
-                                    <input type="file" name="custom_music" accept="audio/*"
-                                           class="block w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100">
-                                    <p class="text-[11px] text-stone-400">Format: MP3, M4A, OGG. Maksimal 8MB.</p>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-bold text-stone-700">Musik Latar Belakang</label>
                                     @if(!empty($safeData['music_path']))
-                                        <div class="text-[11px] text-emerald-600 font-medium">✓ Musik saat ini aktif: {{ basename($safeData['music_path']) }}</div>
+                                        <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                                            <span>✓ Aktif:</span>
+                                            <span class="font-bold text-stone-800">{{ $safeData['music_title'] ?? basename($safeData['music_path']) }}</span>
+                                        </span>
+                                    @else
+                                        <span class="text-[11px] font-semibold text-stone-400">🔇 Tanpa Musik</span>
                                     @endif
+                                </div>
+
+                                <!-- Music Source Selector Tabs -->
+                                <div class="bg-stone-100 p-1 rounded-2xl flex gap-1 mb-4 text-xs">
+                                    <button type="button" @click="musicSource = 'preset'"
+                                            :class="musicSource === 'preset' ? 'bg-white shadow text-rose-600 font-bold' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                                            class="flex-1 py-2 rounded-xl text-center transition-all flex items-center justify-center gap-1.5">
+                                        <span>🎵</span>
+                                        <span>Pilihan Admin</span>
+                                    </button>
+                                    <button type="button" @click="musicSource = 'custom'"
+                                            :class="musicSource === 'custom' ? 'bg-white shadow text-rose-600 font-bold' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                                            class="flex-1 py-2 rounded-xl text-center transition-all flex items-center justify-center gap-1.5">
+                                        <span>📤</span>
+                                        <span>Upload Sendiri</span>
+                                    </button>
+                                    <button type="button" @click="musicSource = 'none'"
+                                            :class="musicSource === 'none' ? 'bg-white shadow text-stone-900 font-bold' : 'text-stone-600 hover:text-stone-900 font-medium'"
+                                            class="flex-1 py-2 rounded-xl text-center transition-all flex items-center justify-center gap-1.5">
+                                        <span>🔇</span>
+                                        <span>Tanpa Musik</span>
+                                    </button>
+                                </div>
+
+                                <input type="hidden" name="music_source" :value="musicSource">
+
+                                <!-- 1. PRESET MUSICS (Disediakan Admin) -->
+                                <div x-show="musicSource === 'preset'" class="space-y-3">
+                                    <p class="text-[11px] text-stone-500">Pilih musik pengiring yang telah disiapkan admin untuk tema acara Anda. Klik tombol putar untuk mendengarkan cuplikan audio:</p>
+
+                                    <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                        @foreach($presetMusics as $music)
+                                            <label class="block p-3 rounded-2xl border transition-all cursor-pointer relative hover:border-rose-200
+                                                          {{ ($safeData['music_path'] ?? '') === $music->file_path ? 'border-rose-500 bg-rose-50/50 ring-1 ring-rose-500' : 'border-stone-200 bg-white' }}">
+                                                <div class="flex items-center justify-between gap-3">
+                                                    <div class="flex items-center gap-3">
+                                                        <input type="radio" name="preset_music_id" value="{{ $music->id }}"
+                                                               {{ ($safeData['music_path'] ?? '') === $music->file_path ? 'checked' : '' }}
+                                                               class="text-rose-600 focus:ring-rose-500 border-stone-300">
+                                                        <div>
+                                                            <div class="font-bold text-xs text-stone-900 flex items-center gap-1.5">
+                                                                <span>{{ $music->title }}</span>
+                                                                <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase
+                                                                    {{ $music->category === 'wedding' ? 'bg-rose-100 text-rose-700' :
+                                                                       ($music->category === 'khitan' ? 'bg-amber-100 text-amber-700' :
+                                                                       ($music->category === 'general' ? 'bg-indigo-100 text-indigo-700' : 'bg-stone-100 text-stone-700')) }}">
+                                                                    {{ $music->category_label }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="text-[11px] text-stone-400 font-medium">{{ $music->artist ?? 'Admin Library' }}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Audio Preview Button -->
+                                                    <button type="button" @click.stop="previewMusic('{{ $music->audio_url }}')"
+                                                            class="shrink-0 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                                                            :class="playingMusicUrl === '{{ $music->audio_url }}' ? 'bg-rose-600 text-white shadow-sm' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'">
+                                                        <span x-show="playingMusicUrl !== '{{ $music->audio_url }}'">▶ Putar</span>
+                                                        <span x-show="playingMusicUrl === '{{ $music->audio_url }}'">⏸ Jeda</span>
+                                                    </button>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <!-- 2. CUSTOM UPLOAD -->
+                                <div x-show="musicSource === 'custom'" x-cloak class="space-y-3">
+                                    <div class="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-2">
+                                        <p class="text-xs text-stone-700 font-semibold">Tidak menemukan musik yang pas di pustaka? Unggah berkas lagu Anda sendiri:</p>
+                                        <input type="file" name="custom_music" accept="audio/mp3,audio/wav,audio/ogg,audio/m4a"
+                                               class="block w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100">
+                                        <p class="text-[11px] text-stone-400">Format yang didukung: MP3, WAV, OGG, M4A. Maksimal 15MB.</p>
+
+                                        @if(!empty($safeData['music_path']) && ($safeData['music_source'] ?? '') === 'custom')
+                                            <div class="mt-3 pt-3 border-t border-stone-200 flex items-center justify-between text-xs">
+                                                <span class="text-emerald-700 font-medium truncate max-w-[200px]">✓ Berkas tersimpan: {{ $safeData['music_title'] ?? basename($safeData['music_path']) }}</span>
+                                                @if(!empty($safeData['music_url']))
+                                                    <button type="button" @click="previewMusic('{{ $safeData['music_url'] }}')"
+                                                            class="px-3 py-1 rounded-lg text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50">
+                                                        <span x-show="playingMusicUrl !== '{{ $safeData['music_url'] }}'">▶ Tes Putar</span>
+                                                        <span x-show="playingMusicUrl === '{{ $safeData['music_url'] }}'">⏸ Jeda</span>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- 3. NONE (TANPA MUSIK) -->
+                                <div x-show="musicSource === 'none'" x-cloak class="p-4 bg-stone-50 border border-stone-200 rounded-2xl text-xs text-stone-600">
+                                    <p class="font-semibold text-stone-800 mb-1">🔇 Mode Hening</p>
+                                    <p class="text-[11px] text-stone-500">Undangan akan ditampilkan tanpa musik latar belakang. Tamu dapat membaca dan menikmati konten undangan dengan tenang.</p>
                                 </div>
                             </div>
                         </div>
@@ -520,9 +615,38 @@
         function invitationEditor() {
             return {
                 activeTab: 'dasar',
+                musicSource: '{{ old('music_source', $safeData['music_source'] ?? (!empty($safeData['music_path']) ? (($safeData['music_source'] ?? '') === 'custom' ? 'custom' : 'preset') : 'preset')) }}',
+                playingMusicUrl: null,
+                audioPreviewPlayer: null,
                 events: @json($eventsData ?? []),
                 stories: @json($safeData['story'] ?? []),
                 gifts: @json($safeData['gifts'] ?? []),
+
+                previewMusic(url) {
+                    if (!url) return;
+                    if (this.playingMusicUrl === url) {
+                        if (this.audioPreviewPlayer) {
+                            this.audioPreviewPlayer.pause();
+                        }
+                        this.playingMusicUrl = null;
+                        return;
+                    }
+
+                    if (this.audioPreviewPlayer) {
+                        this.audioPreviewPlayer.pause();
+                    }
+
+                    this.audioPreviewPlayer = new Audio(url);
+                    this.playingMusicUrl = url;
+                    this.audioPreviewPlayer.play().catch(e => {
+                        console.log('Audio preview playback error:', e);
+                        this.playingMusicUrl = null;
+                    });
+
+                    this.audioPreviewPlayer.onended = () => {
+                        this.playingMusicUrl = null;
+                    };
+                },
 
                 addEvent() {
                     if (this.events.length < {{ $maxEvents }}) {

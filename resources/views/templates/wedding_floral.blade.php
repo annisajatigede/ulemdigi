@@ -30,13 +30,14 @@
 </head>
 <body class="font-body bg-[#fff9fa] text-stone-700 antialiased selection:bg-rose-100 selection:text-rose-600 overflow-x-hidden"
       x-data="invitationApp({
-          musicUrl: '{{ $data['music_path'] ?? '/audio/wedding-melody.mp3' }}',
+          musicUrl: '{{ $data['music_url'] ?? '' }}',
           eventDate: '{{ isset($invitation->events[0]) ? $invitation->events[0]->start_at->toIso8601String() : now()->addDays(14)->toIso8601String() }}'
       })">
 
+    @if(!empty($data['music_path']))
     <!-- Audio Player Element -->
     <audio x-ref="audioPlayer" loop preload="none">
-        <source src="{{ $data['music_path'] ?? 'https://assets.mixkit.co/music/preview/mixkit-wedding-waltz-piano-518.mp3' }}" type="audio/mpeg">
+        <source src="{{ $data['music_url'] ?? (str_starts_with($data['music_path'], 'http') ? $data['music_path'] : asset(ltrim($data['music_path'], '/'))) }}" type="audio/mpeg">
     </audio>
 
     <!-- Floating Audio Toggle Button -->
@@ -54,6 +55,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
         </svg>
     </button>
+    @endif
 
     <!-- COVER / OPENING MODAL -->
     <div x-show="!opened"

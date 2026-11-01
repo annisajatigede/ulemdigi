@@ -61,6 +61,7 @@ Aplikasi web SaaS "Undangan Digital Berbayar" telah selesai dibangun dari nol hi
 - `GET /admin`: Dashboard metrik pendapatan, total transaksi, total undangan, dan statistik pengguna.
 - `GET /admin/users`: CRUD pengguna dan pengubahan role (`user` / `admin`).
 - `GET /admin/templates`: CRUD template undangan (unggah file `.blade.php` dan gambar thumbnail).
+- `GET /admin/musics`: CRUD pustaka musik latar rekomendasi admin (unggah audio MP3/WAV/OGG, URL audio, pemutar preview langsung, toggle status aktif).
 - `GET /admin/plans`: Pengaturan harga paket, durasi hari, batas jumlah foto, batas rangkaian acara, dan fitur JSON.
 - `GET /admin/transactions`: Riwayat seluruh transaksi sistem dengan filter status dan rentang tanggal, serta ekspor CSV.
 - `GET /admin/settings`: Pengaturan nama situs, logo, favicon, kontak WhatsApp, dan kredensial Midtrans.
@@ -127,8 +128,8 @@ php artisan test
 
 Hasil verifikasi:
 ```text
-Tests:    37 passed (108 assertions)
-Duration: ~2.6s
+Tests:    47 passed (139 assertions)
+Duration: ~3.1s
 Status:   100% GREEN (ALL PASS)
 ```
 Semua modul fitur (Autentikasi Breeze, Alur Checkout & Webhook Auto-Activation, Halaman Publik Undangan & RSVP, Personalisasi Tamu, Editor Publish Toggle, dan Expiration Artisan Command) teruji dengan sempurna.

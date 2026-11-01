@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\MusicController as AdminMusicController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TemplateController as AdminTemplateController;
@@ -71,6 +72,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/templates', [AdminTemplateController::class, 'store'])->name('templates.store');
         Route::put('/templates/{template}', [AdminTemplateController::class, 'update'])->name('templates.update');
         Route::delete('/templates/{template}', [AdminTemplateController::class, 'destroy'])->name('templates.destroy');
+
+        // CRUD Musics Library (Admin Preset Musics)
+        Route::get('/musics', [AdminMusicController::class, 'index'])->name('musics.index');
+        Route::post('/musics', [AdminMusicController::class, 'store'])->name('musics.store');
+        Route::post('/musics/{music}/toggle', [AdminMusicController::class, 'toggle'])->name('musics.toggle');
+        Route::delete('/musics/{music}', [AdminMusicController::class, 'destroy'])->name('musics.destroy');
 
         // CRUD Plans
         Route::get('/plans', [AdminPlanController::class, 'index'])->name('plans.index');

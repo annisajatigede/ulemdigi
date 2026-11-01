@@ -108,6 +108,8 @@ class Invitation extends Model
         $defaults = [
             'theme_color' => '#8b5cf6',
             'music_path' => null,
+            'music_title' => null,
+            'music_source' => 'preset',
             'opening' => [
                 'title' => 'The Wedding of',
                 'quote' => 'Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri...',
@@ -143,6 +145,17 @@ class Invitation extends Model
             ],
         ];
 
-        return array_replace_recursive($defaults, $this->data ?? []);
+        $data = array_replace_recursive($defaults, $this->data ?? []);
+
+        if (! empty($data['music_path'])) {
+            $path = $data['music_path'];
+            $data['music_url'] = (str_starts_with($path, 'http://') || str_starts_with($path, 'https://'))
+                ? $path
+                : asset(ltrim($path, '/'));
+        } else {
+            $data['music_url'] = null;
+        }
+
+        return $data;
     }
 }
