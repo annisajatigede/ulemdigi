@@ -32,7 +32,20 @@ try {
     });
   }
 
-  // 3. Build frontend
+  // 3. Sync static assets (images, audio, uploads, thumbnails)
+  const backendPublic = path.join(backendDir, 'public');
+  const frontendPublic = path.join(frontendDir, 'public');
+  if (fs.existsSync(backendPublic)) {
+    console.log('🖼️ [Build] Syncing public assets (thumbnails, storage, audio)...');
+    fs.cpSync(backendPublic, frontendPublic, { recursive: true });
+    const thumbSvg = path.join(frontendPublic, 'templates', 'thumbnails', 'wedding_floral.svg');
+    const rootSvg = path.join(frontendPublic, 'templates', 'wedding_floral.svg');
+    if (fs.existsSync(thumbSvg) && !fs.existsSync(rootSvg)) {
+      fs.copyFileSync(thumbSvg, rootSvg);
+    }
+  }
+
+  // 4. Build frontend
   console.log('🔨 [Build] Compiling frontend (Vite)...');
   execSync(`${npmCmd} run build`, {
     cwd: frontendDir,
@@ -40,12 +53,16 @@ try {
     env: process.env
   });
 
-  // 3. Ensure root dist exists and copy artifacts
+  // 5. Ensure root dist exists and copy artifacts
   if (fs.existsSync(frontendDist)) {
     if (fs.existsSync(rootDist)) {
       fs.rmSync(rootDist, { recursive: true, force: true });
     }
     fs.cpSync(frontendDist, rootDist, { recursive: true });
+    // Also copy backend/public directly to dist as well
+    if (fs.existsSync(backendPublic)) {
+      fs.cpSync(backendPublic, rootDist, { recursive: true });
+    }
     console.log('✨ [Build] Frontend assets successfully built and copied to root /dist');
   }
 

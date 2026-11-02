@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff1f2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffe4e6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#grad1)"/>
+  <circle cx="300" cy="180" r="110" fill="#fecdd3" opacity="0.6"/>
+  <circle cx="300" cy="180" r="95" fill="#ffffff" stroke="#f43f5e" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="300" y="150" font-family="'Playfair Display', serif" font-size="28" fill="#e11d48" text-anchor="middle" font-style="italic">Floral Romance</text>
+  <text x="300" y="185" font-family="sans-serif" font-size="14" fill="#9f1239" text-anchor="middle" letter-spacing="3">ROMANTIC WEDDING</text>
+  <text x="300" y="215" font-family="'Great Vibes', cursive" font-size="24" fill="#be123c" text-anchor="middle">Fulan &amp; Fulanah</text>
+  <path d="M 230 250 Q 300 270 370 250" stroke="#f43f5e" stroke-width="2" fill="none"/>
+  <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#881337" text-anchor="middle">Nuansa Bunga Estetik &amp; Lembut</text>
+</svg>
