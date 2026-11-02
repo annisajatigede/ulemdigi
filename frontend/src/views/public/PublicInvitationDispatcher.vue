@@ -38,9 +38,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../api/client';
+import { subscribeWishes } from '../../firebase/services/invitationService';
 
 import NotPublished from './NotPublished.vue';
 import Expired from './Expired.vue';
@@ -122,6 +123,19 @@ const loadInvitation = async () => {
     recipientName.value = res.data.recipientName || 'Tamu Undangan';
     isPersonal.value = !!res.data.isPersonal;
     guest.value = res.data.guest || null;
+
+    // Realtime wishes listener from Firestore
+    if (invitation.value?.id && invitation.value.id !== 'alex-olivia') {
+      try {
+        unsubscribeWishes = subscribeWishes(invitation.value.id, (realtimeWishes) => {
+          if (realtimeWishes && realtimeWishes.length > 0) {
+            wishes.value = realtimeWishes;
+          }
+        });
+      } catch (e) {
+        console.warn('Realtime wishes subscription notice:', e);
+      }
+    }
   } catch (err) {
     error.value = err.response?.data?.message || 'Undangan tidak ditemukan atau terjadi kesalahan server.';
   } finally {
@@ -129,7 +143,15 @@ const loadInvitation = async () => {
   }
 };
 
+let unsubscribeWishes = null;
+
 onMounted(() => {
   loadInvitation();
+});
+
+onUnmounted(() => {
+  if (unsubscribeWishes) {
+    unsubscribeWishes();
+  }
 });
 </script>

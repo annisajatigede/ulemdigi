@@ -269,11 +269,89 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import api from '../api/client';
+import { getAllTemplates, getAllPlans, getSiteSettings } from '../firebase/services/adminService';
 
-const templates = ref([]);
-const plans = ref([]);
-const settings = ref({});
+const defaultTemplates = [
+  {
+    id: '1',
+    name: 'Floral Romance',
+    category: 'wedding',
+    style: 'romantic',
+    blade_view: 'templates.wedding_floral',
+    thumbnail_path: '/templates/thumbnails/wedding_floral.svg'
+  },
+  {
+    id: '2',
+    name: 'Khitanan Ceria',
+    category: 'khitan',
+    style: 'playful',
+    blade_view: 'templates.khitan_ceria',
+    thumbnail_path: '/templates/thumbnails/khitan_ceria.svg'
+  },
+  {
+    id: '3',
+    name: 'Modern Minimalist',
+    category: 'general',
+    style: 'modern',
+    blade_view: 'templates.general_modern',
+    thumbnail_path: '/templates/thumbnails/general_modern.svg'
+  },
+  {
+    id: '4',
+    name: 'Islami Minimalis',
+    category: 'wedding',
+    style: 'islami',
+    blade_view: 'templates.wedding_islami',
+    thumbnail_path: '/templates/thumbnails/wedding_islami.svg'
+  },
+  {
+    id: '5',
+    name: 'Rustic Autumn Floral',
+    category: 'wedding',
+    style: 'rustic',
+    blade_view: 'templates.wedding_autumn',
+    thumbnail_path: '/templates/thumbnails/wedding_autumn.png'
+  }
+];
+
+const defaultPlans = [
+  {
+    id: '1',
+    name: 'Silver / Hemat',
+    slug: 'silver',
+    price: 49000,
+    active_days: 30,
+    max_photos: 5,
+    features: ['1 Tema Pilihan', 'Masa Aktif 30 Hari', 'Galeri hingga 5 Foto', 'Amplop Digital & RSVP', 'Google Maps Lokasi']
+  },
+  {
+    id: '2',
+    name: 'Gold / Populer',
+    slug: 'gold',
+    price: 89000,
+    active_days: 90,
+    max_photos: 15,
+    features: ['Bebas Ganti Tema Kapan Saja', 'Masa Aktif 90 Hari', 'Galeri hingga 15 Foto', 'Kustom Musik Latar & Preset', 'Cerita Cinta & Hitung Mundur', 'Buku Tamu & RSVP Interaktif']
+  },
+  {
+    id: '3',
+    name: 'Platinum / Mewah',
+    slug: 'platinum',
+    price: 149000,
+    active_days: 365,
+    max_photos: 30,
+    features: ['Semua Fitur Gold', 'Masa Aktif 365 Hari (1 Tahun)', 'Galeri hingga 30 Foto', 'Bebas Custom Domain Khusus', 'Prioritas Dukungan WhatsApp 24/7']
+  }
+];
+
+const templates = ref(defaultTemplates);
+const plans = ref(defaultPlans);
+const settings = ref({
+  site_name: 'Forkoway.com',
+  site_tagline: 'Platform Undangan Digital Berbayar Modern & Elegan',
+  site_description: 'Solusi undangan online terbaik untuk pernikahan, khitanan, dan acara spesial.',
+  contact_whatsapp: '6281322231433'
+});
 const selectedCategory = ref('all');
 
 const allTemplatesCount = computed(() => templates.value.length);
@@ -296,12 +374,23 @@ function formatPrice(val) {
 
 onMounted(async () => {
   try {
-    const res = await api.get('/home');
-    templates.value = res.data.templates || [];
-    plans.value = res.data.plans || [];
-    settings.value = res.data.settings || {};
+    const [remoteTemplates, remotePlans, remoteSettings] = await Promise.allSettled([
+      getAllTemplates(),
+      getAllPlans(),
+      getSiteSettings()
+    ]);
+
+    if (remoteTemplates.status === 'fulfilled' && remoteTemplates.value?.length > 0) {
+      templates.value = remoteTemplates.value;
+    }
+    if (remotePlans.status === 'fulfilled' && remotePlans.value?.length > 0) {
+      plans.value = remotePlans.value;
+    }
+    if (remoteSettings.status === 'fulfilled' && remoteSettings.value) {
+      settings.value = { ...settings.value, ...remoteSettings.value };
+    }
   } catch (err) {
-    console.error('Failed to load home data:', err);
+    console.warn('Using fallback home data:', err);
   }
 });
 </script>
