@@ -4,13 +4,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDiEJL4xRQ9GKujWVp7iKMeGO_7idt502w",
-  authDomain: "sumedangonline-180419.firebaseapp.com",
-  databaseURL: "https://sumedangonline-180419.firebaseio.com",
-  projectId: "sumedangonline-180419",
-  storageBucket: "sumedangonline-180419.firebasestorage.app",
-  messagingSenderId: "283298459271",
-  appId: "1:283298459271:web:5b2b802c16b129f92a1222"
+  apiKey: "AIzaSyCTQDutO7mreAtAO98yeXVVTplYmpQRw08",
+  authDomain: "forkoway.firebaseapp.com",
+  projectId: "forkoway",
+  storageBucket: "forkoway.firebasestorage.app",
+  messagingSenderId: "311357809397",
+  appId: "1:311357809397:web:2df5b2bc6aabc9b985dbbc",
+  measurementId: "G-2V3V3YM45T"
 };
 
 // Initialize Firebase
