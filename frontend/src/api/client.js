@@ -508,9 +508,19 @@ const api = {
       const user = auth.currentUser;
       const userId = user?.uid || 'guest';
       const templateId = body.template_id || '1';
-      const planCode = body.plan_code || 'silver';
-      const plan = defaultPlans.find(p => p.slug === planCode || p.id === planCode) || defaultPlans[0];
+      const planCode = body.plan_id || body.plan_code || 'silver';
 
+      let plan = defaultPlans.find(p => p.id === planCode.toString() || p.slug === planCode) || defaultPlans[0];
+      try {
+        const pSnap = await getDoc(doc(db, 'plans', planCode.toString()));
+        if (pSnap.exists()) {
+          plan = { id: pSnap.id, ...pSnap.data() };
+        }
+      } catch (e) {
+        console.warn('Fetch plan error in checkout:', e.message);
+      }
+
+      const isFree = Number(plan.price || 0) === 0;
       let newInvId = 'inv_' + Date.now();
       const slug = 'momen-' + Math.random().toString(36).substring(2, 8);
 
@@ -522,7 +532,8 @@ const api = {
           template_id: templateId,
           plan_id: plan.id,
           category: 'wedding',
-          status: 'draft',
+          status: isFree ? 'published' : 'draft',
+          published_at: isFree ? serverTimestamp() : null,
           data: demoInvitation.data,
           created_at: serverTimestamp(),
           updated_at: serverTimestamp()
@@ -531,7 +542,7 @@ const api = {
 
         // Add main event
         const evDate = new Date();
-        evDate.setDate(evDate.getDate() + 30);
+        evDate.setDate(evDate.getDate() + (plan.active_days || 30));
         await addDoc(collection(db, 'invitations', newInvId, 'events'), {
           title: 'Akad Nikah & Resepsi',
           start_at: evDate.toISOString(),
@@ -545,17 +556,20 @@ const api = {
           user_id: userId,
           invitation_id: newInvId,
           order_id: 'ORDER-' + Date.now(),
-          amount: plan.price,
-          status: 'pending',
+          amount: Number(plan.price || 0),
+          status: isFree ? 'paid' : 'pending',
+          paid_at: isFree ? serverTimestamp() : null,
           created_at: serverTimestamp()
         });
 
         return {
           data: {
             status: 'success',
+            is_free: isFree,
             invitation_id: newInvId,
             transaction_id: txRef.id,
-            snap_token: 'MOCK_SNAP_' + txRef.id
+            transaction: { id: txRef.id, status: isFree ? 'paid' : 'pending' },
+            snap_token: isFree ? null : ('MOCK_SNAP_' + txRef.id)
           }
         };
       } catch (e) {
@@ -563,9 +577,11 @@ const api = {
         return {
           data: {
             status: 'success',
+            is_free: isFree,
             invitation_id: newInvId,
             transaction_id: 'tx_' + Date.now(),
-            snap_token: 'MOCK_SNAP_' + Date.now()
+            transaction: { id: 'tx_' + Date.now(), status: isFree ? 'paid' : 'pending' },
+            snap_token: isFree ? null : ('MOCK_SNAP_' + Date.now())
           }
         };
       }

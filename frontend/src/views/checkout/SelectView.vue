@@ -95,7 +95,7 @@
             <div class="flex items-center justify-between">
               <span class="font-bold text-stone-900">Total Pembayaran</span>
               <span class="font-extrabold text-2xl text-rose-600">
-                Rp {{ selectedPlanPrice.toLocaleString('id-ID') }}
+                {{ selectedPlanPrice === 0 ? 'GRATIS (Promo)' : `Rp ${selectedPlanPrice.toLocaleString('id-ID')}` }}
               </span>
             </div>
           </div>
@@ -107,9 +107,10 @@
             type="submit"
             :disabled="submitting"
             class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm px-8 py-3.5 rounded-2xl shadow-lg shadow-rose-600/30 transition-all transform hover:-translate-y-0.5"
+            :class="selectedPlanPrice === 0 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30' : ''"
           >
-            <span v-if="submitting">Memproses Transaksi...</span>
-            <span v-else>Lanjut ke Pembayaran Snap →</span>
+            <span v-if="submitting">Memproses Undangan...</span>
+            <span v-else>{{ selectedPlanPrice === 0 ? 'Mulai Buat Undangan (Gratis Promo) →' : 'Lanjut ke Pembayaran Snap →' }}</span>
           </button>
         </div>
       </form>
@@ -182,8 +183,13 @@ async function handleSubmit() {
     };
 
     const res = await api.post('/checkout/pay', payload);
-    const transId = res.data.transaction.id;
-    router.push(`/checkout/pay/${transId}`);
+    if (res.data.is_free || selectedPlanPrice.value === 0) {
+      const invId = res.data.invitation_id || res.data.transaction?.invitation_id;
+      router.push(`/editor/${invId}`);
+    } else {
+      const transId = res.data.transaction?.id || res.data.transaction_id;
+      router.push(`/checkout/pay/${transId}`);
+    }
   } catch (err) {
     alert(err.response?.data?.message || 'Gagal memulai checkout.');
   } finally {

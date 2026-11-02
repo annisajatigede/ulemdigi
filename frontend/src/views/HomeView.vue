@@ -153,8 +153,11 @@
               <p class="text-xs text-stone-500 mt-1">Masa aktif {{ plan.duration_days }} hari penuh</p>
 
               <div class="mt-6 mb-8">
-                <span class="text-4xl font-extrabold text-stone-900">Rp {{ formatPrice(plan.price) }}</span>
-                <span class="text-xs text-stone-500 font-medium">/ acara</span>
+                <span class="text-4xl font-extrabold text-stone-900">
+                  {{ Number(plan.price) === 0 ? 'GRATIS' : `Rp ${formatPrice(plan.price)}` }}
+                </span>
+                <span v-if="Number(plan.price) > 0" class="text-xs text-stone-500 font-medium">/ acara</span>
+                <span v-else class="text-xs text-rose-600 font-bold ml-1.5 uppercase tracking-wide">Promo Spesial</span>
               </div>
 
               <ul class="space-y-3.5 text-xs sm:text-sm text-stone-600">
@@ -173,11 +176,11 @@
 
             <div class="mt-8 pt-6 border-t border-stone-100">
               <router-link
-                :to="`/checkout/select?plan_code=${plan.code}`"
+                :to="`/checkout/select?plan_code=${plan.slug || plan.code || plan.id}`"
                 class="block w-full py-3.5 text-center font-bold text-sm rounded-2xl transition-all"
-                :class="plan.code === 'standard' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/30' : 'bg-stone-900 hover:bg-stone-800 text-white'"
+                :class="Number(plan.price) === 0 ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30' : (plan.code === 'standard' || plan.slug === 'gold' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/30' : 'bg-stone-900 hover:bg-stone-800 text-white')"
               >
-                Pilih {{ plan.name }}
+                {{ Number(plan.price) === 0 ? 'Mulai Buat Gratis 🎉' : `Pilih ${plan.name}` }}
               </router-link>
             </div>
           </div>
