@@ -232,12 +232,22 @@ const api = {
         eventsData = demoInvitation.events || [];
       }
 
+      let presetMusics = defaultMusics;
+      try {
+        const mSnap = await getDocs(query(collection(db, 'musics'), orderBy('title', 'asc')));
+        if (!mSnap.empty) {
+          presetMusics = mSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+      } catch (e) {
+        console.warn('Preset musics fetch error:', e.message);
+      }
+
       return {
         data: {
           invitation,
           safeData: getSafeData(invitation.data),
           templates: defaultTemplates,
-          presetMusics: defaultMusics,
+          presetMusics,
           eventsData
         }
       };

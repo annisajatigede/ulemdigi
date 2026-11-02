@@ -78,10 +78,10 @@ export const defaultPlans = [
 ];
 
 export const defaultMusics = [
-  { id: '1', title: 'Janji Suci Kita (Acoustic)', artist: 'Forkoway Special Wedding', file_path: '/audio/janji_suci_kita_v1.mp3', category: 'wedding', is_active: true },
-  { id: '2', title: 'Janji Suci Kita (Romantic Duet)', artist: 'Forkoway Special Wedding', file_path: '/audio/janji_suci_kita_v2.mp3', category: 'wedding', is_active: true },
-  { id: '3', title: 'Mengikat Janji Suci (Ballad Piano)', artist: 'Forkoway Special Wedding', file_path: '/audio/mengikat_janji_suci_v1.mp3', category: 'wedding', is_active: true },
-  { id: '4', title: 'Mengikat Janji Suci (Orchestral Grand)', artist: 'Forkoway Special Wedding', file_path: '/audio/mengikat_janji_suci_v2.mp3', category: 'wedding', is_active: true }
+  { id: '1', title: 'Janji Suci Kita (Acoustic)', artist: 'Forkoway Special Wedding', file_path: '/audio/janji_suci_kita_01.mp3', audio_url: '/audio/janji_suci_kita_01.mp3', category: 'wedding', is_active: true },
+  { id: '2', title: 'Janji Suci Kita (Romantic Duet)', artist: 'Forkoway Special Wedding', file_path: '/audio/janji_suci_kita_02.mp3', audio_url: '/audio/janji_suci_kita_02.mp3', category: 'wedding', is_active: true },
+  { id: '3', title: 'Mengikat Janji Suci (Ballad Piano)', artist: 'Forkoway Special Wedding', file_path: '/audio/mengikat_janji_suci_01.mp3', audio_url: '/audio/mengikat_janji_suci_01.mp3', category: 'wedding', is_active: true },
+  { id: '4', title: 'Mengikat Janji Suci (Orchestral Grand)', artist: 'Forkoway Special Wedding', file_path: '/audio/mengikat_janji_suci_02.mp3', audio_url: '/audio/mengikat_janji_suci_02.mp3', category: 'wedding', is_active: true }
 ];
 
 export const defaultSettings = {
@@ -166,8 +166,8 @@ export const demoInvitation = {
       photo_path: '/storage/invitations/1/5sAe17gwxvqTyVGhTwVTw70wN98rE9dG025DKbci.jpg'
     },
     theme_color: '#b86835',
-    music_path: '/audio/janji_suci_kita_v1.mp3',
-    music_url: '/audio/janji_suci_kita_v1.mp3',
+    music_path: '/audio/janji_suci_kita_01.mp3',
+    music_url: '/audio/janji_suci_kita_01.mp3',
     music_title: 'Janji Suci Kita (Acoustic)',
     music_source: 'preset',
     rsvp_enabled: true,

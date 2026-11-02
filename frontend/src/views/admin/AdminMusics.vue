@@ -200,9 +200,14 @@
                     </span>
                   </td>
                   <td class="py-4 px-4">
-                    <audio controls preload="none" class="h-9 w-48 sm:w-64 rounded-lg">
-                      <source :src="m.file_path" type="audio/mpeg">
-                    </audio>
+                    <div class="flex items-center gap-2">
+                      <audio controls :src="m.file_path" preload="metadata" class="h-9 w-44 sm:w-56 rounded-lg"></audio>
+                      <button type="button" @click="previewInAdmin(m.file_path)"
+                              class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1 shadow-sm"
+                              :class="playingUrl === m.file_path ? 'bg-rose-600 text-white' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'">
+                        <span>{{ playingUrl === m.file_path ? '⏸ Jeda' : '▶ Tes' }}</span>
+                      </button>
+                    </div>
                   </td>
                   <td class="py-4 px-4">
                     <button type="button" @click="toggleActive(m.id)"
@@ -244,6 +249,27 @@ const submitting = ref(false);
 const statusMessage = ref(null);
 const musics = ref([]);
 const categoryFilter = ref('');
+const playingUrl = ref(null);
+let adminAudio = null;
+
+const previewInAdmin = (url) => {
+  if (!url) return;
+  if (playingUrl.value === url) {
+    if (adminAudio) adminAudio.pause();
+    playingUrl.value = null;
+    return;
+  }
+  if (adminAudio) adminAudio.pause();
+  adminAudio = new Audio(url);
+  playingUrl.value = url;
+  adminAudio.play().catch(e => {
+    console.error('Play error:', e);
+    playingUrl.value = null;
+  });
+  adminAudio.onended = () => {
+    playingUrl.value = null;
+  };
+};
 
 const showAddModal = ref(false);
 const audioSourceType = ref('url');

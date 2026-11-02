@@ -2,7 +2,7 @@
   <div class="font-body bg-[#fbfbfa] text-stone-700 antialiased selection:bg-emerald-100 selection:text-emerald-800 min-h-screen overflow-x-hidden relative">
 
     <!-- Audio Player Element -->
-    <audio v-if="audioSrc" ref="audioPlayer" loop preload="none">
+    <audio v-if="audioSrc" :src="audioSrc" ref="audioPlayer" loop preload="auto">
       <source :src="audioSrc" type="audio/mpeg">
     </audio>
 
