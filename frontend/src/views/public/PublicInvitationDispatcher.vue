@@ -42,6 +42,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../api/client';
 import { subscribeWishes } from '../../firebase/services/invitationService';
+import { defaultTemplates } from '../../firebase/services/defaults';
 
 import NotPublished from './NotPublished.vue';
 import Expired from './Expired.vue';
@@ -117,8 +118,22 @@ const loadInvitation = async () => {
 
     invitation.value = res.data.invitation;
     template.value = res.data.template;
-    invitationData.value = res.data.data || {};
-    events.value = res.data.events || [];
+    const serverData = res.data.data || {};
+    if (latestSyncPayload?.data) {
+      invitationData.value = {
+        ...serverData,
+        ...latestSyncPayload.data,
+        opening: { ...(serverData.opening || {}), ...(latestSyncPayload.data.opening || {}) },
+        party1: { ...(serverData.party1 || {}), ...(latestSyncPayload.data.party1 || {}) },
+        party2: { ...(serverData.party2 || {}), ...(latestSyncPayload.data.party2 || {}) },
+        closing: { ...(serverData.closing || {}), ...(latestSyncPayload.data.closing || {}) }
+      };
+      if (latestSyncPayload.events) events.value = [...latestSyncPayload.events];
+    } else {
+      invitationData.value = serverData;
+      events.value = res.data.events || [];
+    }
+
     wishes.value = res.data.wishes || [];
     recipientName.value = res.data.recipientName || 'Tamu Undangan';
     isPersonal.value = !!res.data.isPersonal;
@@ -136,6 +151,13 @@ const loadInvitation = async () => {
         console.warn('Realtime wishes subscription notice:', e);
       }
     }
+
+    // Notify parent window (editor) that iframe is ready to receive sync
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
+      }
+    } catch (e) {}
   } catch (err) {
     error.value = err.response?.data?.message || 'Undangan tidak ditemukan atau terjadi kesalahan server.';
   } finally {
@@ -144,11 +166,20 @@ const loadInvitation = async () => {
 };
 
 let unsubscribeWishes = null;
+let latestSyncPayload = null;
 
 const handleLiveSync = (event) => {
   if (event.data && event.data.type === 'LIVE_PREVIEW_SYNC') {
+    latestSyncPayload = event.data;
     if (event.data.data) {
-      invitationData.value = { ...invitationData.value, ...event.data.data };
+      invitationData.value = {
+        ...invitationData.value,
+        ...event.data.data,
+        opening: { ...(invitationData.value.opening || {}), ...(event.data.data.opening || {}) },
+        party1: { ...(invitationData.value.party1 || {}), ...(event.data.data.party1 || {}) },
+        party2: { ...(invitationData.value.party2 || {}), ...(event.data.data.party2 || {}) },
+        closing: { ...(invitationData.value.closing || {}), ...(event.data.data.closing || {}) }
+      };
     }
     if (event.data.events && Array.isArray(event.data.events)) {
       events.value = [...event.data.events];

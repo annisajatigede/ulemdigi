@@ -866,6 +866,11 @@ const api = {
         if (body.music_source) updatedData.music_source = body.music_source;
       }
 
+      // Strip redundant heavy fields from root of document to keep document ultra-compact
+      delete updatedFields.party1;
+      delete updatedFields.party2;
+      delete updatedFields.gallery;
+
       updatedFields.data = updatedData;
       updatedFields.updated_at = serverTimestamp();
 
@@ -883,7 +888,8 @@ const api = {
           await setDoc(doc(db, 'invitations', updatedFields.slug), updatedFields, { merge: true });
         }
       } catch (e) {
-        console.warn('Firestore invitation save error:', e.message);
+        console.error('Firestore invitation save error:', e);
+        throw new Error('Gagal menyimpan ke database Firestore: ' + (e.message || e));
       }
 
       return {

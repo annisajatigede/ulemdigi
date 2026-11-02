@@ -39,7 +39,7 @@
           <p class="text-xs font-semibold tracking-widest text-emerald-700 uppercase mb-2">Walimatul 'Urs</p>
 
           <h1 class="font-serif-title text-3xl sm:text-4xl font-bold text-stone-900 mb-2">
-            {{ data.party1?.name || 'Fulanah' }} & {{ data.party2?.name || 'Fulan' }}
+            {{ data.party1?.name || 'Alex' }} & {{ data.party2?.name || 'Olivia' }}
           </h1>
           
           <div class="w-16 h-0.5 bg-emerald-400 mx-auto my-3"></div>
@@ -72,7 +72,7 @@
         </span>
 
         <h1 class="font-serif-title text-4xl sm:text-5xl text-stone-900 font-bold mb-2">
-          {{ data.party1?.name || 'Fulanah' }} <span class="text-emerald-700 font-normal">&</span> {{ data.party2?.name || 'Fulan' }}
+          {{ data.party1?.name || 'Alex' }} <span class="text-emerald-700 font-normal">&</span> {{ data.party2?.name || 'Olivia' }}
         </h1>
         <p class="text-xs text-stone-500 font-medium tracking-widest uppercase mb-6">
           {{ formattedEventDate }}

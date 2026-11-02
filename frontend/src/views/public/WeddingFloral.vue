@@ -35,7 +35,7 @@
 
           <p class="text-xs font-semibold tracking-widest text-rose-500 uppercase mb-3">{{ data.opening?.title || 'The Wedding of' }}</p>
           <h1 class="font-serif-title text-4xl sm:text-5xl font-bold text-stone-800 tracking-tight mb-2">
-            {{ data.party1?.name || 'Fulanah' }} <span class="font-cursive text-rose-500 font-normal text-3xl">&</span> {{ data.party2?.name || 'Fulan' }}
+            {{ data.party1?.name || 'Alex' }} <span class="font-cursive text-rose-500 font-normal text-3xl">&</span> {{ data.party2?.name || 'Olivia' }}
           </h1>
           <div class="w-16 h-0.5 bg-rose-300 mx-auto my-4"></div>
 
@@ -66,7 +66,7 @@
           Walimatul 'Urs
         </div>
         <h1 class="font-cursive text-5xl sm:text-6xl text-rose-600 mb-2">
-          {{ data.party1?.name || 'Fulanah' }} & {{ data.party2?.name || 'Fulan' }}
+          {{ data.party1?.name || 'Alex' }} & {{ data.party2?.name || 'Olivia' }}
         </h1>
         <p class="font-serif-title text-stone-600 text-sm tracking-widest uppercase mb-6">
           {{ formattedEventDate }}

@@ -497,13 +497,17 @@
                   <div v-for="(item, idx) in galleryList" :key="idx" 
                        class="relative group rounded-2xl overflow-hidden border border-stone-200 aspect-square bg-stone-100 shadow-sm">
                     <img :src="item.url || item" class="w-full h-full object-cover">
-                    
-                    <!-- Overlay Tombol Hapus -->
-                    <div class="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                      <button type="button" @click="removeGalleryItem(idx)" 
-                              class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1 transition-transform transform hover:scale-105">
-                        <span>🗑</span> Hapus
-                      </button>
+                    <!-- Tombol Hapus Selalu Terlihat -->
+                    <button type="button" @click.stop="removeGalleryItem(idx)"
+                            class="absolute top-2 right-2 bg-rose-600/95 hover:bg-rose-700 text-white text-xs font-bold w-6 h-6 rounded-full shadow-md flex items-center justify-center z-10 transition-transform active:scale-95 cursor-pointer"
+                            title="Hapus foto ini">
+                      ✕
+                    </button>
+                    <!-- Overlay Tombol Hapus Hover -->
+                    <div class="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 pointer-events-none">
+                      <span class="bg-rose-600 text-white text-[11px] font-bold px-3 py-1 rounded-xl shadow-lg flex items-center gap-1">
+                        <span>🗑</span> Hapus Foto
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -692,8 +696,13 @@ const onParty1PhotoChange = async (e) => {
   const file = e.target.files?.[0];
   if (file) {
     try {
-      party1PhotoPreview.value = await processImageToBase64(file, 600, 600, 0.82);
-      party1PhotoRemoved.value = false;
+      const base64 = await processImageToBase64(file, 400, 400, 32000);
+      if (base64) {
+        party1PhotoPreview.value = base64;
+        party1PhotoRemoved.value = false;
+        formData.value.party1.photo_path = base64;
+        sendLiveSync();
+      }
     } catch (err) {
       console.warn('Failed to process photo 1:', err);
     }
@@ -706,14 +715,20 @@ const removeParty1Photo = () => {
   formData.value.party1.photo_path = '';
   if (safeData.value.party1) safeData.value.party1.photo_path = '';
   if (party1PhotoInput.value) party1PhotoInput.value.value = '';
+  sendLiveSync();
 };
 
 const onParty2PhotoChange = async (e) => {
   const file = e.target.files?.[0];
   if (file) {
     try {
-      party2PhotoPreview.value = await processImageToBase64(file, 600, 600, 0.82);
-      party2PhotoRemoved.value = false;
+      const base64 = await processImageToBase64(file, 400, 400, 32000);
+      if (base64) {
+        party2PhotoPreview.value = base64;
+        party2PhotoRemoved.value = false;
+        formData.value.party2.photo_path = base64;
+        sendLiveSync();
+      }
     } catch (err) {
       console.warn('Failed to process photo 2:', err);
     }
@@ -726,6 +741,7 @@ const removeParty2Photo = () => {
   formData.value.party2.photo_path = '';
   if (safeData.value.party2) safeData.value.party2.photo_path = '';
   if (party2PhotoInput.value) party2PhotoInput.value.value = '';
+  sendLiveSync();
 };
 
 // Gallery Handlers
@@ -734,7 +750,7 @@ const onGalleryFilesChange = async (e) => {
   for (const file of files) {
     if (galleryList.value.length >= maxPhotos.value) break;
     try {
-      const base64 = await processImageToBase64(file, 800, 800, 0.80);
+      const base64 = await processImageToBase64(file, 600, 600, 32000);
       if (base64) {
         galleryList.value.push({ url: base64 });
       }
@@ -743,10 +759,12 @@ const onGalleryFilesChange = async (e) => {
     }
   }
   if (galleryFilesInput.value) galleryFilesInput.value.value = '';
+  sendLiveSync();
 };
 
 const removeGalleryItem = (index) => {
   galleryList.value.splice(index, 1);
+  sendLiveSync();
 };
 
 const fetchEditorData = async () => {
@@ -769,6 +787,12 @@ const fetchEditorData = async () => {
     formData.value.party1 = { ...safeData.value.party1 };
     formData.value.party2 = { ...safeData.value.party2 };
     formData.value.closing = { ...safeData.value.closing };
+
+    // Photo preview initialization
+    party1PhotoPreview.value = safeData.value.party1?.photo_path || '';
+    party1PhotoRemoved.value = !safeData.value.party1?.photo_path;
+    party2PhotoPreview.value = safeData.value.party2?.photo_path || '';
+    party2PhotoRemoved.value = !safeData.value.party2?.photo_path;
 
     // Gallery List
     galleryList.value = (safeData.value.gallery || []).map(g => ({ url: g.url || g }));
@@ -882,6 +906,14 @@ const sendLiveSync = () => {
         finalMusicPath = customMusicUrl.value;
       }
 
+      let p1Photo = formData.value.party1?.photo_path || safeData.value?.party1?.photo_path || '';
+      if (party1PhotoPreview.value) p1Photo = party1PhotoPreview.value;
+      if (party1PhotoRemoved.value) p1Photo = '';
+
+      let p2Photo = formData.value.party2?.photo_path || safeData.value?.party2?.photo_path || '';
+      if (party2PhotoPreview.value) p2Photo = party2PhotoPreview.value;
+      if (party2PhotoRemoved.value) p2Photo = '';
+
       const syncPayload = {
         type: 'LIVE_PREVIEW_SYNC',
         template_id: formData.value.template_id,
@@ -890,11 +922,11 @@ const sendLiveSync = () => {
           opening: { ...formData.value.opening },
           party1: {
             ...formData.value.party1,
-            photo_path: party1PhotoPreview.value || formData.value.party1?.photo_path || safeData.value?.party1?.photo_path || ''
+            photo_path: p1Photo
           },
           party2: {
             ...formData.value.party2,
-            photo_path: party2PhotoPreview.value || formData.value.party2?.photo_path || safeData.value?.party2?.photo_path || ''
+            photo_path: p2Photo
           },
           closing: { ...formData.value.closing },
           theme_color: formData.value.theme_color,
@@ -1003,15 +1035,6 @@ const saveChanges = async () => {
         gifts: gifts.value,
         gallery: galleryList.value
       },
-      party1: {
-        ...formData.value.party1,
-        photo_path: finalParty1Photo
-      },
-      party2: {
-        ...formData.value.party2,
-        photo_path: finalParty2Photo
-      },
-      gallery: galleryList.value,
       events: events.value
     };
 
