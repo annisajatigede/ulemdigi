@@ -556,6 +556,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import api from '../../api/client';
+import { alertError } from '../../utils/alert';
 
 const props = defineProps({
   invitation: Object,
@@ -725,7 +726,7 @@ const submitRsvp = async () => {
       successRsvpMessage.value = null;
     }, 5000);
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal mengirim RSVP. Silakan coba lagi.');
+    await alertError('Gagal Mengirim RSVP', err.response?.data?.message || 'Gagal mengirim RSVP. Silakan coba lagi.');
   } finally {
     submittingRsvp.value = false;
   }

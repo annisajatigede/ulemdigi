@@ -341,6 +341,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import api from '../../api/client';
+import { alertError } from '../../utils/alert';
 
 const props = defineProps({
   invitation: Object,
@@ -466,7 +467,7 @@ const submitRsvp = async () => {
       });
     }
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal mengirimkan konfirmasi.');
+    await alertError('Gagal Mengirim Konfirmasi', err.response?.data?.message || 'Gagal mengirimkan konfirmasi.');
   } finally {
     submittingRsvp.value = false;
   }

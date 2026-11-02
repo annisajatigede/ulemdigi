@@ -6,10 +6,18 @@
           <!-- Logo -->
           <div class="shrink-0 flex items-center">
             <router-link to="/" class="flex items-center gap-2 group">
-              <span class="text-2xl">💍</span>
-              <span class="font-black text-xl tracking-tight text-stone-900 group-hover:text-rose-600 transition-colors">
-                Forkoway<span class="text-rose-600">.com</span>
-              </span>
+              <img
+                v-if="siteSettings.logo_url"
+                :src="siteSettings.logo_url"
+                :alt="siteSettings.site_name || 'Forkoway.com'"
+                class="h-9 w-auto max-w-[190px] object-contain transition-transform group-hover:scale-105"
+              />
+              <template v-else>
+                <span class="text-2xl">💍</span>
+                <span class="font-black text-xl tracking-tight text-stone-900 group-hover:text-rose-600 transition-colors">
+                  Forkoway<span class="text-rose-600">.com</span>
+                </span>
+              </template>
             </router-link>
           </div>
 
@@ -203,15 +211,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { getSiteSettings } from '../firebase/services/adminService';
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const dropdownOpen = ref(false);
 const mobileOpen = ref(false);
+const siteSettings = ref({});
 
 async function handleLogout() {
   dropdownOpen.value = false;
@@ -219,4 +229,34 @@ async function handleLogout() {
   await authStore.logout();
   router.push('/login');
 }
+
+const applyFavicon = (url) => {
+  if (!url) return;
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = url;
+};
+
+onMounted(async () => {
+  try {
+    const s = await getSiteSettings();
+    if (s) {
+      siteSettings.value = s;
+      if (s.favicon_url) applyFavicon(s.favicon_url);
+    }
+  } catch (e) {
+    console.warn('Navbar load settings error:', e);
+  }
+
+  window.addEventListener('settings-updated', (e) => {
+    if (e.detail) {
+      siteSettings.value = { ...siteSettings.value, ...e.detail };
+      if (e.detail.favicon_url) applyFavicon(e.detail.favicon_url);
+    }
+  });
+});
 </script>

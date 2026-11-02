@@ -24,7 +24,8 @@ import {
 } from '../firebase/services/defaults';
 
 /**
- * Helper to upload a File or Blob directly to Firebase Storage
+ * Helper to upload a File or Blob directly to Firebase Storage,
+ * falling back to Base64 data URL if Storage bucket is not available or offline.
  */
 async function uploadToStorage(file, path) {
   if (!file) return null;
@@ -33,8 +34,17 @@ async function uploadToStorage(file, path) {
     const snapshot = await uploadBytes(sRef, file);
     return await getDownloadURL(snapshot.ref);
   } catch (err) {
-    console.warn('Storage upload error (fallback to local URL if offline):', err);
-    return URL.createObjectURL(file);
+    console.warn('Storage upload error, falling back to Base64 Data URL:', err);
+    try {
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    } catch (e2) {
+      return URL.createObjectURL(file);
+    }
   }
 }
 

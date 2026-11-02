@@ -123,6 +123,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
+import { alertError } from '../../utils/alert';
 
 const route = useRoute();
 const router = useRouter();
@@ -191,7 +192,7 @@ async function handleSubmit() {
       router.push(`/checkout/pay/${transId}`);
     }
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal memulai checkout.');
+    await alertError('Gagal Memulai Checkout', err.response?.data?.message || err.message || 'Gagal memulai checkout.');
   } finally {
     submitting.value = false;
   }

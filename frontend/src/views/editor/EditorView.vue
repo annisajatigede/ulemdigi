@@ -584,6 +584,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../api/client';
+import { notifySuccess, alertError } from '../../utils/alert';
 
 const route = useRoute();
 const invitationId = route.params.id;
@@ -797,11 +798,14 @@ const saveChanges = async () => {
     });
 
     statusMessage.value = res.data.message || 'Perubahan undangan berhasil disimpan!';
+    notifySuccess('Perubahan Berhasil Disimpan!');
     removeGalleryIndexes.value = [];
     await fetchEditorData();
     reloadIframe();
   } catch (err) {
-    errorMessage.value = err.response?.data?.message || 'Gagal menyimpan perubahan undangan.';
+    const msg = err.response?.data?.message || 'Gagal menyimpan perubahan undangan.';
+    errorMessage.value = msg;
+    await alertError('Gagal Menyimpan', msg);
   } finally {
     saving.value = false;
   }

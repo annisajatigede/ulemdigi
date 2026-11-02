@@ -235,6 +235,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '../../api/client';
+import { notifySuccess, alertError } from '../../utils/alert';
 
 const invitations = ref([]);
 const transactions = ref([]);
@@ -261,10 +262,10 @@ async function loadDashboard() {
 async function handleTogglePublish(inv) {
   try {
     const res = await api.post(`/editor/${inv.id}/toggle-publish`);
-    statusMessage.value = res.data.message;
+    notifySuccess(res.data.message || 'Status publikasi berhasil diubah');
     await loadDashboard();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal mengubah status publish.');
+    await alertError('Gagal!', err.response?.data?.message || 'Gagal mengubah status publish.');
   }
 }
 

@@ -150,7 +150,7 @@
 
             <div>
               <h3 class="text-xl font-extrabold text-stone-900">{{ plan.name }}</h3>
-              <p class="text-xs text-stone-500 mt-1">Masa aktif {{ plan.duration_days }} hari penuh</p>
+              <p class="text-xs text-stone-500 mt-1">Masa aktif {{ plan.duration_days || plan.active_days }} hari penuh</p>
 
               <div class="mt-6 mb-8">
                 <span class="text-4xl font-extrabold text-stone-900">
@@ -252,7 +252,8 @@
     <footer class="bg-stone-900 text-stone-400 py-12 border-t border-stone-800 text-xs">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <span class="font-extrabold text-base text-white tracking-tight">{{ settings.site_name || 'Forkoway.com' }}</span>
+          <img v-if="settings.logo_url" :src="settings.logo_url" :alt="settings.site_name || 'Forkoway.com'" class="h-8 w-auto object-contain mb-2">
+          <span v-else class="font-extrabold text-base text-white tracking-tight">{{ settings.site_name || 'Forkoway.com' }}</span>
           <p class="mt-1 text-stone-400">{{ settings.site_tagline || 'Platform Undangan Digital Berbayar Modern & Elegan' }}</p>
         </div>
 
@@ -322,10 +323,11 @@ const defaultPlans = [
     id: '1',
     name: 'Silver / Hemat',
     slug: 'silver',
-    price: 49000,
-    active_days: 30,
+    price: 0,
+    active_days: 7,
+    duration_days: 7,
     max_photos: 5,
-    features: ['1 Tema Pilihan', 'Masa Aktif 30 Hari', 'Galeri hingga 5 Foto', 'Amplop Digital & RSVP', 'Google Maps Lokasi']
+    features: ['1 Tema Pilihan', 'Masa Aktif 7 Hari', 'Galeri hingga 5 Foto', 'Amplop Digital & RSVP', 'Google Maps Lokasi']
   },
   {
     id: '2',
@@ -395,5 +397,11 @@ onMounted(async () => {
   } catch (err) {
     console.warn('Using fallback home data:', err);
   }
+
+  window.addEventListener('settings-updated', (e) => {
+    if (e.detail) {
+      settings.value = { ...settings.value, ...e.detail };
+    }
+  });
 });
 </script>

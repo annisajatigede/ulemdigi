@@ -73,6 +73,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api/client';
+import { alertError } from '../../utils/alert';
 
 const route = useRoute();
 const router = useRouter();
@@ -93,7 +94,7 @@ async function loadTransaction() {
       router.push(`/checkout/success/${transaction.value.id}`);
     }
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal memuat transaksi.');
+    await alertError('Gagal Memuat Transaksi', err.response?.data?.message || 'Gagal memuat transaksi.');
     router.push('/dashboard');
   } finally {
     loading.value = false;
@@ -110,7 +111,7 @@ function payWithSnap() {
         router.push(`/checkout/pay/${transaction.value.id}`);
       },
       onError: () => {
-        alert('Pembayaran gagal atau dibatalkan.');
+        alertError('Pembayaran Gagal', 'Pembayaran gagal diproses atau dibatalkan.');
       },
       onClose: () => {
         // Closed without completing
@@ -131,7 +132,7 @@ async function simulateSuccess() {
     });
     router.push(`/checkout/success/${transaction.value.id}`);
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menjalankan simulasi.');
+    await alertError('Simulasi Gagal', err.response?.data?.message || 'Gagal menjalankan simulasi.');
   } finally {
     isSimulating.value = false;
   }

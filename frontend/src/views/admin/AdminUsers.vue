@@ -140,6 +140,7 @@
 import { ref, onMounted } from 'vue';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/auth';
+import { alertSuccess, alertError, alertConfirm } from '../../utils/alert';
 
 const authStore = useAuthStore();
 
@@ -191,23 +192,24 @@ const createUser = async () => {
     await api.post('/admin/users', newUser.value);
     showAddModal.value = false;
     newUser.value = { name: '', email: '', password: '', role: 'user' };
-    statusMessage.value = 'Pengguna berhasil ditambahkan.';
+    await alertSuccess('Berhasil!', 'Pengguna berhasil ditambahkan.');
     await fetchUsers();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menambahkan pengguna');
+    await alertError('Gagal Menambahkan', err.response?.data?.message || 'Gagal menambahkan pengguna');
   } finally {
     submitting.value = false;
   }
 };
 
 const deleteUser = async (id) => {
-  if (!confirm('Hapus pengguna ini? Semua data undangannya akan terhapus.')) return;
+  const confirmed = await alertConfirm('Hapus Pengguna?', 'Hapus pengguna ini? Semua data undangannya akan terhapus.');
+  if (!confirmed) return;
   try {
     await api.delete(`/admin/users/${id}`);
-    statusMessage.value = 'Pengguna berhasil dihapus.';
+    await alertSuccess('Terhapus!', 'Pengguna berhasil dihapus.');
     await fetchUsers();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menghapus pengguna');
+    await alertError('Gagal Menghapus', err.response?.data?.message || 'Gagal menghapus pengguna');
   }
 };
 

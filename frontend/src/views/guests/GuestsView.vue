@@ -237,6 +237,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../api/client';
+import { alertSuccess, alertError, alertConfirm, notifySuccess } from '../../utils/alert';
 
 const route = useRoute();
 const invitationId = route.params.id;
@@ -309,32 +310,34 @@ const createGuest = async () => {
     await api.post(`/invitations/${invitationId}/guests`, newGuest.value);
     showAddModal.value = false;
     newGuest.value = { name: '', phone: '', guest_count: 1 };
-    statusMessage.value = 'Tamu berhasil ditambahkan ke daftar!';
+    await alertSuccess('Berhasil!', 'Tamu berhasil ditambahkan ke daftar!');
     await fetchGuests();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menambahkan tamu');
+    await alertError('Gagal Menambahkan', err.response?.data?.message || 'Gagal menambahkan tamu');
   } finally {
     submittingGuest.value = false;
   }
 };
 
 const deleteGuest = async (guestId) => {
-  if (!confirm('Hapus tamu ini dari daftar?')) return;
+  const confirmed = await alertConfirm('Hapus Tamu?', 'Apakah Anda yakin ingin menghapus tamu ini dari daftar?');
+  if (!confirmed) return;
   try {
     await api.delete(`/invitations/${invitationId}/guests/${guestId}`);
-    statusMessage.value = 'Tamu berhasil dihapus dari daftar.';
+    notifySuccess('Tamu dihapus dari daftar');
     await fetchGuests();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menghapus tamu');
+    await alertError('Gagal Menghapus', err.response?.data?.message || 'Gagal menghapus tamu');
   }
 };
 
 const checkInGuest = async (guestId) => {
   try {
     await api.post(`/invitations/${invitationId}/guests/${guestId}/checkin`);
+    notifySuccess('Check-in kehadiran tamu berhasil!');
     await fetchGuests();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal melakukan check-in');
+    await alertError('Gagal Check-In', err.response?.data?.message || 'Gagal melakukan check-in');
   }
 };
 

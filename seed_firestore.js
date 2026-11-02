@@ -29,7 +29,8 @@ async function seed() {
     midtrans_client_key: '',
     midtrans_server_key: '',
     midtrans_is_production: '0',
-    logo_url: '/images/forkoway-og.jpg',
+    logo_url: '',
+    favicon_url: '',
     updated_at: serverTimestamp()
   });
 
@@ -40,10 +41,11 @@ async function seed() {
       id: '1',
       name: 'Silver / Hemat',
       slug: 'silver',
-      price: 49000,
-      active_days: 30,
+      price: 0,
+      active_days: 7,
+      duration_days: 7,
       max_photos: 5,
-      features: ['1 Tema Pilihan', 'Masa Aktif 30 Hari', 'Galeri hingga 5 Foto', 'Amplop Digital & RSVP', 'Google Maps Lokasi']
+      features: ['1 Tema Pilihan', 'Masa Aktif 7 Hari', 'Galeri hingga 5 Foto', 'Amplop Digital & RSVP', 'Google Maps Lokasi']
     },
     {
       id: '2',

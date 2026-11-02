@@ -207,6 +207,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '../../api/client';
+import { alertSuccess, alertError, alertConfirm, notifySuccess } from '../../utils/alert';
 
 const loading = ref(true);
 const submitting = ref(false);
@@ -259,10 +260,10 @@ const createMusic = async () => {
 
     showAddModal.value = false;
     newMusic.value = { title: '', artist: '', category: 'wedding', sort_order: 0 };
-    statusMessage.value = 'Musik baru berhasil ditambahkan ke pustaka.';
+    await alertSuccess('Berhasil!', 'Musik baru berhasil ditambahkan ke pustaka.');
     await fetchMusics();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal mengunggah musik');
+    await alertError('Gagal Mengunggah', err.response?.data?.message || 'Gagal mengunggah musik');
   } finally {
     submitting.value = false;
   }
@@ -271,20 +272,22 @@ const createMusic = async () => {
 const toggleActive = async (id) => {
   try {
     await api.post(`/admin/musics/${id}/toggle`);
+    notifySuccess('Status musik diperbarui');
     await fetchMusics();
   } catch (err) {
-    alert('Gagal mengubah status musik');
+    await alertError('Gagal!', 'Gagal mengubah status musik');
   }
 };
 
 const deleteMusic = async (id) => {
-  if (!confirm('Hapus musik ini dari pustaka?')) return;
+  const confirmed = await alertConfirm('Hapus Musik?', 'Hapus musik ini dari pustaka?');
+  if (!confirmed) return;
   try {
     await api.delete(`/admin/musics/${id}`);
-    statusMessage.value = 'Musik berhasil dihapus dari pustaka.';
+    await alertSuccess('Terhapus!', 'Musik berhasil dihapus dari pustaka.');
     await fetchMusics();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menghapus musik');
+    await alertError('Gagal Menghapus', err.response?.data?.message || 'Gagal menghapus musik');
   }
 };
 

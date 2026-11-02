@@ -128,6 +128,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '../../api/client';
+import { alertSuccess, alertError, alertConfirm } from '../../utils/alert';
 
 const loading = ref(true);
 const submitting = ref(false);
@@ -168,23 +169,24 @@ const createTemplate = async () => {
 
     showAddModal.value = false;
     newTemplate.value = { name: '', category: 'wedding', style: 'classic' };
-    statusMessage.value = 'Template berhasil ditambahkan.';
+    await alertSuccess('Berhasil!', 'Template baru berhasil ditambahkan.');
     await fetchTemplates();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menambahkan template');
+    await alertError('Gagal Menambahkan', err.response?.data?.message || 'Gagal menambahkan template');
   } finally {
     submitting.value = false;
   }
 };
 
 const deleteTemplate = async (id) => {
-  if (!confirm('Hapus template ini?')) return;
+  const confirmed = await alertConfirm('Hapus Template?', 'Apakah Anda yakin ingin menghapus template ini?');
+  if (!confirmed) return;
   try {
     await api.delete(`/admin/templates/${id}`);
-    statusMessage.value = 'Template berhasil dihapus.';
+    await alertSuccess('Terhapus!', 'Template berhasil dihapus.');
     await fetchTemplates();
   } catch (err) {
-    alert(err.response?.data?.message || 'Gagal menghapus template');
+    await alertError('Gagal Menghapus', err.response?.data?.message || 'Gagal menghapus template');
   }
 };
 
