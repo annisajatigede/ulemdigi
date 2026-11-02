@@ -37,3 +37,8 @@ Thumbs.db
 # Uploads
 backend/public/uploads/*
 !backend/public/uploads/.gitkeep
+
+# Firebase Credentials
+*-firebase-adminsdk-*.json
+*service-account*.json
+sa.json

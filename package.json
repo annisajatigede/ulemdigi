@@ -24,6 +24,7 @@
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
+    "firebase-tools": "^15.34.2",
     "prisma": "^5.22.0"
   },
   "keywords": [
