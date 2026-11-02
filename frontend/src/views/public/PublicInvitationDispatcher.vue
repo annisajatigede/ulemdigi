@@ -48,6 +48,7 @@ import WeddingFloral from './WeddingFloral.vue';
 import KhitanCeria from './KhitanCeria.vue';
 import GeneralModern from './GeneralModern.vue';
 import WeddingIslami from './WeddingIslami.vue';
+import WeddingAutumn from './WeddingAutumn.vue';
 
 const route = useRoute();
 const slug = route.params.slug;
@@ -70,6 +71,9 @@ const guest = ref(null);
 
 const resolvedTemplateComponent = computed(() => {
   const viewName = (template.value?.blade_view || '').toLowerCase();
+  if (viewName.includes('wedding_autumn') || viewName.includes('autumn') || viewName.includes('rustic')) {
+    return WeddingAutumn;
+  }
   if (viewName.includes('khitan_ceria') || invitation.value?.category === 'khitan') {
     return KhitanCeria;
   }

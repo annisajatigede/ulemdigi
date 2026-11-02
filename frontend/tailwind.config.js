@@ -9,6 +9,8 @@ export default {
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'Figtree', 'sans-serif'],
         display: ['Playfair Display', 'serif'],
+        cursive: ['Great Vibes', 'cursive'],
+        cinzel: ['Cinzel', 'serif'],
         arabic: ['Amiri', 'serif'],
         fredoka: ['Fredoka', 'sans-serif'],
         montserrat: ['Montserrat', 'sans-serif'],
