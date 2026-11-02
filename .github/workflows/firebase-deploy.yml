@@ -27,5 +27,19 @@ jobs:
           cd frontend && npm run build
 
       - name: Deploy to Firebase Hosting
-      run: |
-          npx --yes firebase-tools deploy --only hosting --project forkoway --token "${{ secrets.FIREBASE_TOKEN }}"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FORKOWAY }}
+        run: |
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            echo "Deploying using FIREBASE_TOKEN..."
+            npx --yes firebase-tools deploy --only hosting --project forkoway --token "$FIREBASE_TOKEN"
+          elif [ -n "$SERVICE_ACCOUNT" ]; then
+            echo "Deploying using Google Cloud Service Account..."
+            echo "$SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+            export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+            npx --yes firebase-tools deploy --only hosting --project forkoway
+          else
+            echo "ERROR: Belum ada Secret FIREBASE_TOKEN atau FIREBASE_SERVICE_ACCOUNT_FORKOWAY di GitHub!"
+            exit 1
+          fi
