@@ -8,7 +8,7 @@
             <router-link to="/" class="flex items-center gap-2 group">
               <span class="text-2xl">💍</span>
               <span class="font-black text-xl tracking-tight text-stone-900 group-hover:text-rose-600 transition-colors">
-                Kawinan<span class="text-rose-600">.id</span>
+                Forkoway<span class="text-rose-600">.com</span>
               </span>
             </router-link>
           </div>

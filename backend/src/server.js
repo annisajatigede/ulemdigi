@@ -48,7 +48,7 @@ app.use('/', apiRoutes);
 app.get('/api-status', (req, res) => {
   res.json({
     status: 'online',
-    app: 'Kawinan.id API Server (Node.js + Express + Prisma)',
+    app: 'Forkoway.com API Server (Node.js + Express + Prisma)',
     version: '2.0.0',
     time: new Date().toISOString(),
   });
@@ -75,7 +75,7 @@ if (fs.existsSync(distPath)) {
   app.get('/', (req, res) => {
     res.json({
       status: 'online',
-      app: 'Kawinan.id API Server (Node.js + Express + Prisma)',
+      app: 'Forkoway.com API Server (Node.js + Express + Prisma)',
       version: '2.0.0',
       time: new Date().toISOString(),
     });
@@ -92,7 +92,7 @@ app.use((err, req, res, next) => {
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`🚀 Kawinan.id Backend Server is running on http://localhost:${PORT}`);
+    console.log(`🚀 Forkoway.com Backend Server is running on http://localhost:${PORT}`);
   });
 }
 

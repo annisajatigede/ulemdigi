@@ -143,11 +143,11 @@ const logoFileInput = ref(null);
 const faviconFileInput = ref(null);
 
 const settings = ref({
-  site_name: 'Kawinan.id',
+  site_name: 'Forkoway.com',
   site_tagline: 'Platform Undangan Digital Modern & Elegan',
   site_description: 'Buat undangan digital pernikahan dan khitanan kekinian.',
   contact_whatsapp: '6281234567890',
-  contact_email: 'support@kawinan.id',
+  contact_email: 'support@forkoway.com',
   midtrans_server_key: '',
   midtrans_client_key: '',
   midtrans_is_production: '0'

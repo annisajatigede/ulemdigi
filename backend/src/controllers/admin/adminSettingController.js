@@ -5,11 +5,11 @@ class AdminSettingController {
     try {
       const settingsList = await prisma.settings.findMany();
       const settings = {
-        site_name: 'Kawinan.id',
+        site_name: 'Forkoway.com',
         site_tagline: 'Platform Undangan Digital Berbayar Modern & Elegan',
         site_description: 'Solusi undangan online terbaik untuk momen spesial Anda.',
         contact_whatsapp: '6281234567890',
-        contact_email: 'support@kawinan.id',
+        contact_email: 'support@forkoway.com',
         logo_url: null,
         favicon_url: null,
         midtrans_server_key: process.env.MIDTRANS_SERVER_KEY || '',

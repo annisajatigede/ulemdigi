@@ -333,7 +333,7 @@
           </a>
         </div>
 
-        <p class="text-[10px] text-stone-400 mt-8">Dibuat dengan segenap cinta di <router-link to="/" class="font-semibold text-rose-500 hover:underline">Kawinan.id</router-link></p>
+        <p class="text-[10px] text-stone-400 mt-8">Dibuat dengan segenap cinta di <router-link to="/" class="font-semibold text-rose-500 hover:underline">Forkoway.com</router-link></p>
       </section>
     </main>
   </div>

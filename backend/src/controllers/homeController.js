@@ -21,7 +21,7 @@ class HomeController {
 
       const settingsList = await prisma.settings.findMany();
       const settings = {
-        site_name: 'Kawinan.id',
+        site_name: 'Forkoway.com',
         site_tagline: 'Platform Undangan Digital Berbayar Modern & Elegan',
         site_description: 'Solusi undangan online terbaik untuk pernikahan, khitanan, dan acara spesial.',
         contact_whatsapp: '6281234567890',

@@ -4,7 +4,7 @@
       <router-link to="/" class="flex items-center gap-2">
         <span class="text-3xl">💍</span>
         <span class="font-black text-2xl tracking-tight text-stone-900">
-          Kawinan<span class="text-rose-600">.id</span>
+          Forkoway<span class="text-rose-600">.com</span>
         </span>
       </router-link>
     </div>

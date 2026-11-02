@@ -249,7 +249,7 @@
     <footer class="bg-stone-900 text-stone-400 py-12 border-t border-stone-800 text-xs">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <span class="font-extrabold text-base text-white tracking-tight">{{ settings.site_name || 'Kawinan.id' }}</span>
+          <span class="font-extrabold text-base text-white tracking-tight">{{ settings.site_name || 'Forkoway.com' }}</span>
           <p class="mt-1 text-stone-400">{{ settings.site_tagline || 'Platform Undangan Digital Berbayar Modern & Elegan' }}</p>
         </div>
 
@@ -260,7 +260,7 @@
         </div>
       </div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-8 border-t border-stone-800 text-center text-stone-500">
-        &copy; 2026 {{ settings.site_name || 'Kawinan.id' }}. All rights reserved.
+        &copy; 2026 {{ settings.site_name || 'Forkoway.com' }}. All rights reserved.
       </div>
     </footer>
 

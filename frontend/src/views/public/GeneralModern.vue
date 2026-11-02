@@ -265,7 +265,7 @@
           </a>
         </div>
 
-        <p class="text-[10px] text-slate-600 mt-8">Powered by <router-link to="/" class="text-emerald-500 hover:underline">Kawinan.id</router-link></p>
+        <p class="text-[10px] text-slate-600 mt-8">Powered by <router-link to="/" class="text-emerald-500 hover:underline">Forkoway.com</router-link></p>
       </section>
     </main>
   </div>
