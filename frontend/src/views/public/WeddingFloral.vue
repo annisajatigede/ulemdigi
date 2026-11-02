@@ -110,32 +110,32 @@
 
       <!-- 3. PROFILE MEMPELAI -->
       <section class="py-10 px-6 sm:px-10 bg-rose-50/30">
-        <!-- Mempelai Wanita -->
+        <!-- Mempelai Pria -->
         <div class="text-center mb-10">
           <div class="w-32 h-32 mx-auto rounded-full p-1 border-2 border-dashed border-rose-300 shadow-md overflow-hidden bg-white mb-4">
             <img v-if="data.party1?.photo_path" :src="data.party1.photo_path" :alt="data.party1.name" class="w-full h-full object-cover rounded-full">
             <div v-else class="w-full h-full rounded-full bg-rose-100 flex items-center justify-center text-rose-400 font-serif-title text-4xl">
-              {{ (data.party1?.name || 'W').charAt(0) }}
+              {{ (data.party1?.name || 'P').charAt(0) }}
             </div>
           </div>
-          <h3 class="font-serif-title text-2xl font-bold text-stone-800">{{ data.party1?.full_name || 'Siti Fulanah, S.Kom' }}</h3>
-          <p class="text-xs text-rose-600 font-medium mt-1">{{ data.party1?.role_label || 'Mempelai Wanita' }}</p>
-          <p class="text-xs text-stone-500 mt-1">{{ data.party1?.child_order || 'Putri pertama dari' }} {{ data.party1?.parents || 'Bpk. Ahmad & Ibu Fatimah' }}</p>
+          <h3 class="font-serif-title text-2xl font-bold text-stone-800">{{ data.party1?.full_name || data.party1?.name || 'Muhammad Fulan, S.T' }}</h3>
+          <p class="text-xs text-rose-600 font-medium mt-1">{{ data.party1?.role_label || 'Mempelai Pria' }}</p>
+          <p class="text-xs text-stone-500 mt-1">{{ data.party1?.child_order || 'Putra pertama dari' }} {{ data.party1?.parents || 'Bpk. Robert & Ibu Sarah' }}</p>
         </div>
 
         <div class="text-center my-4 font-cursive text-4xl text-rose-400">&</div>
 
-        <!-- Mempelai Pria -->
+        <!-- Mempelai Wanita -->
         <div class="text-center">
           <div class="w-32 h-32 mx-auto rounded-full p-1 border-2 border-dashed border-rose-300 shadow-md overflow-hidden bg-white mb-4">
             <img v-if="data.party2?.photo_path" :src="data.party2.photo_path" :alt="data.party2.name" class="w-full h-full object-cover rounded-full">
             <div v-else class="w-full h-full rounded-full bg-rose-100 flex items-center justify-center text-rose-400 font-serif-title text-4xl">
-              {{ (data.party2?.name || 'P').charAt(0) }}
+              {{ (data.party2?.name || 'W').charAt(0) }}
             </div>
           </div>
-          <h3 class="font-serif-title text-2xl font-bold text-stone-800">{{ data.party2?.full_name || 'Muhammad Fulan, S.T' }}</h3>
-          <p class="text-xs text-rose-600 font-medium mt-1">{{ data.party2?.role_label || 'Mempelai Pria' }}</p>
-          <p class="text-xs text-stone-500 mt-1">{{ data.party2?.child_order || 'Putra kedua dari' }} {{ data.party2?.parents || 'Bpk. Hasan & Ibu Aminah' }}</p>
+          <h3 class="font-serif-title text-2xl font-bold text-stone-800">{{ data.party2?.full_name || data.party2?.name || 'Siti Fulanah, S.Ked' }}</h3>
+          <p class="text-xs text-rose-600 font-medium mt-1">{{ data.party2?.role_label || 'Mempelai Wanita' }}</p>
+          <p class="text-xs text-stone-500 mt-1">{{ data.party2?.child_order || 'Putri kedua dari' }} {{ data.party2?.parents || 'Bpk. David & Ibu Emily' }}</p>
         </div>
       </section>
 

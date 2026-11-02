@@ -604,6 +604,7 @@
                   <iframe
                     ref="previewIframe"
                     :src="previewUrl"
+                    @load="onIframeLoaded"
                     class="w-full h-full border-0"
                     title="Live Preview Undangan"
                   ></iframe>
@@ -620,7 +621,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../api/client';
 import { notifySuccess, alertError } from '../../utils/alert';
@@ -866,6 +867,88 @@ const reloadIframe = () => {
   }
 };
 
+let syncTimer = null;
+const sendLiveSync = () => {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    try {
+      if (!previewIframe.value || !previewIframe.value.contentWindow) return;
+
+      let finalMusicPath = safeData.value?.music_path || '';
+      if (musicSource.value === 'preset') {
+        const p = presetMusics.value.find(m => m.id == selectedPresetId.value);
+        if (p) finalMusicPath = p.audio_url || p.file_path;
+      } else if (musicSource.value === 'custom') {
+        finalMusicPath = customMusicUrl.value;
+      }
+
+      const syncPayload = {
+        type: 'LIVE_PREVIEW_SYNC',
+        template_id: formData.value.template_id,
+        category: invitation.value?.category,
+        data: {
+          opening: { ...formData.value.opening },
+          party1: {
+            ...formData.value.party1,
+            photo_path: party1PhotoPreview.value || formData.value.party1?.photo_path || safeData.value?.party1?.photo_path || ''
+          },
+          party2: {
+            ...formData.value.party2,
+            photo_path: party2PhotoPreview.value || formData.value.party2?.photo_path || safeData.value?.party2?.photo_path || ''
+          },
+          closing: { ...formData.value.closing },
+          theme_color: formData.value.theme_color,
+          music_path: finalMusicPath,
+          music_url: finalMusicPath,
+          music_source: musicSource.value,
+          rsvp_enabled: formData.value.rsvp_enabled,
+          wishes_enabled: formData.value.wishes_enabled,
+          events: events.value,
+          story: stories.value,
+          gifts: gifts.value,
+          gallery: galleryList.value
+        },
+        events: events.value
+      };
+
+      const targetSlug = formData.value.slug || invitation.value?.slug || invitationId;
+      try {
+        localStorage.setItem('preview_draft_' + targetSlug, JSON.stringify(syncPayload.data));
+        localStorage.setItem('preview_draft_template_' + targetSlug, formData.value.template_id);
+      } catch (e) {}
+
+      previewIframe.value.contentWindow.postMessage(syncPayload, '*');
+    } catch (e) {
+      console.warn('Sync postMessage warning:', e);
+    }
+  }, 60);
+};
+
+const onIframeLoaded = () => {
+  sendLiveSync();
+};
+
+watch([
+  formData,
+  events,
+  stories,
+  gifts,
+  galleryList,
+  party1PhotoPreview,
+  party2PhotoPreview,
+  selectedPresetId,
+  customMusicUrl,
+  musicSource
+], () => {
+  sendLiveSync();
+}, { deep: true });
+
+const onMessageFromIframe = (event) => {
+  if (event.data?.type === 'IFRAME_READY') {
+    sendLiveSync();
+  }
+};
+
 const saveChanges = async () => {
   try {
     saving.value = true;
@@ -956,5 +1039,10 @@ const saveChanges = async () => {
 
 onMounted(() => {
   fetchEditorData();
+  window.addEventListener('message', onMessageFromIframe);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('message', onMessageFromIframe);
 });
 </script>

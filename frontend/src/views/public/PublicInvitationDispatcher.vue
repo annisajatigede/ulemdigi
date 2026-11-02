@@ -145,13 +145,56 @@ const loadInvitation = async () => {
 
 let unsubscribeWishes = null;
 
+const handleLiveSync = (event) => {
+  if (event.data && event.data.type === 'LIVE_PREVIEW_SYNC') {
+    if (event.data.data) {
+      invitationData.value = { ...invitationData.value, ...event.data.data };
+    }
+    if (event.data.events && Array.isArray(event.data.events)) {
+      events.value = [...event.data.events];
+    }
+    if (event.data.template_id) {
+      if (invitation.value) invitation.value.template_id = event.data.template_id;
+      const foundTemplate = defaultTemplates.find(t => t.id === event.data.template_id.toString());
+      if (foundTemplate) template.value = foundTemplate;
+    }
+  }
+};
+
 onMounted(() => {
   loadInvitation();
+
+  // If in preview mode, apply any existing local preview draft
+  if (previewMode.value) {
+    try {
+      const draft = localStorage.getItem('preview_draft_' + slug);
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        invitationData.value = { ...invitationData.value, ...parsed };
+        if (parsed.events) events.value = parsed.events;
+      }
+      const draftTpl = localStorage.getItem('preview_draft_template_' + slug);
+      if (draftTpl) {
+        const found = defaultTemplates.find(t => t.id === draftTpl.toString());
+        if (found) template.value = found;
+      }
+    } catch (e) {}
+  }
+
+  // Notify parent window (editor) that iframe is ready to receive sync
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
+    }
+  } catch (e) {}
+
+  window.addEventListener('message', handleLiveSync);
 });
 
 onUnmounted(() => {
   if (unsubscribeWishes) {
     unsubscribeWishes();
   }
+  window.removeEventListener('message', handleLiveSync);
 });
 </script>

@@ -217,10 +217,13 @@ const api = {
       let eventsData = [];
 
       try {
-        const docSnap = await getDoc(doc(db, 'invitations', id));
+        let docSnap = await getDoc(doc(db, 'invitations', id));
+        if (!docSnap.exists() && (id === 'demo-invitation' || id === 'alex-olivia')) {
+          docSnap = await getDoc(doc(db, 'invitations', id === 'demo-invitation' ? 'alex-olivia' : 'demo-invitation'));
+        }
         if (docSnap.exists()) {
           invitation = { id: docSnap.id, ...docSnap.data() };
-          const evSnap = await getDocs(query(collection(db, 'invitations', id, 'events'), orderBy('start_at', 'asc')));
+          const evSnap = await getDocs(query(collection(db, 'invitations', docSnap.id, 'events'), orderBy('start_at', 'asc')));
           eventsData = evSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
       } catch (e) {
@@ -868,6 +871,17 @@ const api = {
 
       try {
         await setDoc(invitationRef, updatedFields, { merge: true });
+
+        // If editing demo or default invitation, keep both in sync
+        if (id === 'demo-invitation' || id === 'alex-olivia' || updatedFields.slug === 'alex-olivia') {
+          await setDoc(doc(db, 'invitations', 'alex-olivia'), updatedFields, { merge: true });
+          await setDoc(doc(db, 'invitations', 'demo-invitation'), updatedFields, { merge: true });
+        }
+
+        // Also if slug is customized, ensure the slug document exists for direct lookup
+        if (updatedFields.slug && updatedFields.slug !== id) {
+          await setDoc(doc(db, 'invitations', updatedFields.slug), updatedFields, { merge: true });
+        }
       } catch (e) {
         console.warn('Firestore invitation save error:', e.message);
       }

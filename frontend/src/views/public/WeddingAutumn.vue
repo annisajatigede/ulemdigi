@@ -283,14 +283,14 @@
         </div>
 
         <div class="space-y-12 max-w-md mx-auto">
-          <!-- Mempelai Wanita / Party 1 -->
+          <!-- Mempelai Pria / Party 1 -->
           <div class="text-center bg-white p-6 rounded-3xl shadow-sm border border-[#eee4da]">
             <div class="w-32 h-32 mx-auto rounded-full p-1.5 bg-gradient-to-tr from-[#b86835] via-[#fad2a4] to-[#b86835] shadow-md mb-4 overflow-hidden">
               <img v-if="data.party1?.photo_path" :src="data.party1.photo_path" :alt="data.party1.name" class="w-full h-full object-cover rounded-full">
-              <div v-else class="w-full h-full bg-[#f7eedf] flex items-center justify-center text-4xl rounded-full">👰</div>
+              <div v-else class="w-full h-full bg-[#f7eedf] flex items-center justify-center text-4xl rounded-full">🤵</div>
             </div>
-            <h3 class="font-serif text-xl font-bold text-[#5c3e2e]">{{ data.party1?.full_name || data.party1?.name || 'Mempelai Wanita' }}</h3>
-            <span class="inline-block text-[11px] font-serif text-[#b86835] font-semibold uppercase tracking-wider mt-0.5 mb-2">{{ data.party1?.role_label || 'Mempelai Wanita' }}</span>
+            <h3 class="font-serif text-xl font-bold text-[#5c3e2e]">{{ data.party1?.full_name || data.party1?.name || 'Mempelai Pria' }}</h3>
+            <span class="inline-block text-[11px] font-serif text-[#b86835] font-semibold uppercase tracking-wider mt-0.5 mb-2">{{ data.party1?.role_label || 'Mempelai Pria' }}</span>
             <p v-if="data.party1?.parents" class="text-xs font-serif text-[#7d5642] max-w-xs mx-auto leading-relaxed">
               {{ data.party1?.child_order ? data.party1.child_order + ' ' : '' }} {{ data.party1.parents }}
             </p>
@@ -306,14 +306,14 @@
           <!-- Divider & -->
           <div class="text-center font-cursive text-4xl text-[#c27b4e] -my-4">&</div>
 
-          <!-- Mempelai Pria / Party 2 -->
+          <!-- Mempelai Wanita / Party 2 -->
           <div class="text-center bg-white p-6 rounded-3xl shadow-sm border border-[#eee4da]">
             <div class="w-32 h-32 mx-auto rounded-full p-1.5 bg-gradient-to-tr from-[#b86835] via-[#fad2a4] to-[#b86835] shadow-md mb-4 overflow-hidden">
               <img v-if="data.party2?.photo_path" :src="data.party2.photo_path" :alt="data.party2.name" class="w-full h-full object-cover rounded-full">
-              <div v-else class="w-full h-full bg-[#f7eedf] flex items-center justify-center text-4xl rounded-full">🤵</div>
+              <div v-else class="w-full h-full bg-[#f7eedf] flex items-center justify-center text-4xl rounded-full">👰</div>
             </div>
-            <h3 class="font-serif text-xl font-bold text-[#5c3e2e]">{{ data.party2?.full_name || data.party2?.name || 'Mempelai Pria' }}</h3>
-            <span class="inline-block text-[11px] font-serif text-[#b86835] font-semibold uppercase tracking-wider mt-0.5 mb-2">{{ data.party2?.role_label || 'Mempelai Pria' }}</span>
+            <h3 class="font-serif text-xl font-bold text-[#5c3e2e]">{{ data.party2?.full_name || data.party2?.name || 'Mempelai Wanita' }}</h3>
+            <span class="inline-block text-[11px] font-serif text-[#b86835] font-semibold uppercase tracking-wider mt-0.5 mb-2">{{ data.party2?.role_label || 'Mempelai Wanita' }}</span>
             <p v-if="data.party2?.parents" class="text-xs font-serif text-[#7d5642] max-w-xs mx-auto leading-relaxed">
               {{ data.party2?.child_order ? data.party2.child_order + ' ' : '' }} {{ data.party2.parents }}
             </p>
