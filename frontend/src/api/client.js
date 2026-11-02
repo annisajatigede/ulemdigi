@@ -816,8 +816,21 @@ const api = {
     // 3. ADMIN PLANS UPDATE
     if (cleanUrl.startsWith('/admin/plans/')) {
       const id = cleanUrl.replace('/admin/plans/', '');
+      const updateData = { ...body };
+      if (typeof updateData.features_text === 'string' && (!updateData.features || updateData.features.length === 0)) {
+        updateData.features = updateData.features_text
+          .split('\n')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+      }
+      if (updateData.duration_days && !updateData.active_days) {
+        updateData.active_days = updateData.duration_days;
+      }
+      if (updateData.price !== undefined) {
+        updateData.price = Number(updateData.price);
+      }
       try {
-        await updateDoc(doc(db, 'plans', id), { ...body, updated_at: serverTimestamp() });
+        await setDoc(doc(db, 'plans', id), { ...updateData, updated_at: serverTimestamp() }, { merge: true });
       } catch (e) {
         console.warn('Firestore plan update error:', e.message);
       }

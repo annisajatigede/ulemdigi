@@ -97,7 +97,9 @@ const fetchPlans = async () => {
     const res = await api.get('/admin/plans');
     plans.value = (res.data.plans || []).map(p => ({
       ...p,
-      features_text: Array.isArray(p.features) ? p.features.join('\n') : ''
+      duration_days: p.duration_days || p.active_days || 30,
+      active_days: p.active_days || p.duration_days || 30,
+      features_text: Array.isArray(p.features) ? p.features.join('\n') : (p.features_text || '')
     }));
   } catch (err) {
     console.error('Failed to load plans:', err);
@@ -108,15 +110,25 @@ const fetchPlans = async () => {
 
 const updatePlan = async (plan) => {
   try {
-    const res = await api.put(`/admin/plans/${plan.id}`, {
+    const featuresArray = (plan.features_text || '')
+      .split('\n')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    const payload = {
       name: plan.name,
-      price: plan.price,
-      duration_days: plan.duration_days,
-      max_photos: plan.max_photos,
-      max_events: plan.max_events,
+      price: Number(plan.price || 0),
+      duration_days: Number(plan.duration_days || plan.active_days || 30),
+      active_days: Number(plan.duration_days || plan.active_days || 30),
+      max_photos: Number(plan.max_photos || 5),
+      max_events: Number(plan.max_events || 1),
+      features: featuresArray,
       features_text: plan.features_text
-    });
+    };
+
+    const res = await api.put(`/admin/plans/${plan.id}`, payload);
     statusMessage.value = res.data.message || 'Paket berhasil diperbarui!';
+    await fetchPlans();
   } catch (err) {
     alert(err.response?.data?.message || 'Gagal memperbarui paket');
   }
