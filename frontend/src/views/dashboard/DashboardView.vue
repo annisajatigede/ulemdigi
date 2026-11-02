@@ -109,8 +109,8 @@
                   {{ inv.templates?.name }} • {{ inv.plans?.name }}
                 </span>
                 <h4 class="font-extrabold text-stone-900 text-lg mt-0.5 line-clamp-1">
-                  {{ inv.safeData?.party1?.name || 'Pihak 1' }}
-                  <span v-if="inv.safeData?.party2?.name"> & {{ inv.safeData?.party2?.name }}</span>
+                  {{ inv.safeData?.party1?.name || inv.data?.party1?.name || 'Pihak 1' }}
+                  <span v-if="inv.safeData?.party2?.name || inv.data?.party2?.name"> & {{ inv.safeData?.party2?.name || inv.data?.party2?.name }}</span>
                 </h4>
                 <p class="text-xs text-stone-500 font-mono mt-1 truncate">
                   /u/{{ inv.slug }}

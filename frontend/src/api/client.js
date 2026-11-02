@@ -159,36 +159,78 @@ const api = {
     // 3. DASHBOARD
     if (cleanUrl === '/dashboard') {
       const user = auth.currentUser;
-      const userId = user?.uid || 'guest';
+      const userId = user?.uid;
 
       let invitations = [];
       let transactions = [];
 
       try {
-        const q = query(collection(db, 'invitations'), where('user_id', '==', userId));
-        const snap = await getDocs(q);
-        invitations = snap.docs.map(d => {
-          const inv = { id: d.id, ...d.data() };
-          inv.templates = defaultTemplates.find(t => t.id === (inv.template_id || '1').toString()) || defaultTemplates[0];
-          return inv;
-        });
+        if (userId) {
+          const q = query(collection(db, 'invitations'), where('user_id', '==', userId));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            invitations = snap.docs.map(d => {
+              const raw = d.data();
+              const safe = getSafeData(raw.data);
+              const tpl = defaultTemplates.find(t => t.id === (raw.template_id || '1').toString()) || defaultTemplates[0];
+              const plan = defaultPlans.find(p => p.id === (raw.plan_id || 'silver').toString()) || defaultPlans[0];
+              return {
+                id: d.id,
+                ...raw,
+                safeData: safe,
+                data: safe,
+                templates: tpl,
+                plans: plan,
+                days_remaining: plan.active_days || 7,
+                guests_count: 0,
+                wishes_count: 0
+              };
+            });
+          }
 
-        const tSnap = await getDocs(query(collection(db, 'transactions'), where('user_id', '==', userId)));
-        transactions = tSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const tSnap = await getDocs(query(collection(db, 'transactions'), where('user_id', '==', userId)));
+          transactions = tSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
       } catch (e) {
         console.warn('Dashboard fetch error:', e.message);
       }
 
-      // If user has no invitations yet, give them a sample template card to edit
+      // If user has no custom invitations in Firestore yet:
+      // Check if demo-invitation or alex-olivia has been saved in Firestore!
       if (invitations.length === 0) {
+        let demoDocData = null;
+        try {
+          const dSnap = await getDoc(doc(db, 'invitations', 'demo-invitation'));
+          if (dSnap.exists()) {
+            demoDocData = dSnap.data();
+          } else {
+            const aSnap = await getDoc(doc(db, 'invitations', 'alex-olivia'));
+            if (aSnap.exists()) demoDocData = aSnap.data();
+          }
+        } catch (e) {
+          console.warn('Demo invitation fetch warning in dashboard:', e);
+        }
+
+        const rawData = demoDocData?.data || demoInvitation.data;
+        const safe = getSafeData(rawData);
+        const tplId = demoDocData?.template_id || demoInvitation.template_id || '5';
+        const tpl = defaultTemplates.find(t => t.id === tplId.toString()) || defaultTemplates[0];
+        const plan = defaultPlans[0];
+
         invitations = [
           {
-            ...demoInvitation,
+            ...(demoDocData || demoInvitation),
             id: 'demo-invitation',
-            slug: 'momen-bahagia-' + Math.random().toString(36).substring(2, 6),
-            title: 'Undangan Digital Pertama Anda',
-            status: 'draft',
-            views_count: 0
+            slug: demoDocData?.slug || 'demo-invitation',
+            title: demoDocData?.title || (safe.party1?.name ? `Undangan ${safe.party1.name} & ${safe.party2.name}` : 'Undangan Digital Pertama Anda'),
+            status: demoDocData?.status || 'published',
+            safeData: safe,
+            data: safe,
+            templates: tpl,
+            plans: plan,
+            days_remaining: plan.active_days || 7,
+            guests_count: 0,
+            wishes_count: 0
           }
         ];
       }
@@ -204,7 +246,7 @@ const api = {
             total: invitations.length,
             published,
             draft,
-            total_guests: 42
+            total_guests: 0
           }
         }
       };
@@ -870,6 +912,14 @@ const api = {
       delete updatedFields.party1;
       delete updatedFields.party2;
       delete updatedFields.gallery;
+
+      const user = auth.currentUser;
+      if (user?.uid) {
+        updatedFields.user_id = user.uid;
+      }
+      if (updatedData.party1?.name) {
+        updatedFields.title = `Undangan ${updatedData.party1.name}${updatedData.party2?.name ? ' & ' + updatedData.party2.name : ''}`;
+      }
 
       updatedFields.data = updatedData;
       updatedFields.updated_at = serverTimestamp();

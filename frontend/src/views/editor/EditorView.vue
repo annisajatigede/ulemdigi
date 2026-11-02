@@ -6,7 +6,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div class="flex items-center gap-2">
-              <router-link to="/dashboard" class="text-xs text-stone-500 hover:text-stone-800 font-semibold">← Dashboard</router-link>
+              <button type="button" @click="goBackToDashboard" class="text-xs text-stone-500 hover:text-stone-800 font-semibold cursor-pointer">← Dashboard</button>
               <span class="text-stone-300">/</span>
               <span class="text-xs font-bold text-rose-600 uppercase">{{ invitation?.category || 'WEDDING' }}</span>
             </div>
@@ -626,13 +626,24 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import api from '../../api/client';
 import { notifySuccess, alertError } from '../../utils/alert';
 import { processImageToBase64 } from '../../utils/image';
 
 const route = useRoute();
+const router = useRouter();
 const invitationId = route.params.id;
+
+const goBackToDashboard = async () => {
+  if (saving.value) return;
+  try {
+    await saveChanges();
+  } catch (e) {
+    console.warn('Auto save notice:', e);
+  }
+  router.push('/dashboard');
+};
 
 const loading = ref(true);
 const saving = ref(false);
