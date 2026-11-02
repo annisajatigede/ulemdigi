@@ -89,44 +89,52 @@ const api = {
       let wishes = [];
       let guest = null;
 
-      if (slug === 'alex-olivia') {
-        invitation = { ...demoInvitation };
-        events = demoInvitation.events || [];
-        wishes = demoInvitation.wishes || [];
-      } else {
-        try {
-          const q = query(collection(db, 'invitations'), where('slug', '==', slug));
-          const snap = await getDocs(q);
-          if (!snap.empty) {
-            const docSnap = snap.docs[0];
-            invitation = { id: docSnap.id, ...docSnap.data() };
+      try {
+        const q = query(collection(db, 'invitations'), where('slug', '==', slug));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const docSnap = snap.docs[0];
+          invitation = { id: docSnap.id, ...docSnap.data() };
+        } else {
+          // Check by direct document ID (e.g. alex-olivia or demo-invitation)
+          const directSnap = await getDoc(doc(db, 'invitations', slug));
+          if (directSnap.exists()) {
+            invitation = { id: directSnap.id, ...directSnap.data() };
+          }
+        }
 
-            const evSnap = await getDocs(query(collection(db, 'invitations', docSnap.id, 'events'), orderBy('start_at', 'asc')));
-            events = evSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (invitation) {
+          const invId = invitation.id;
+          const evSnap = await getDocs(query(collection(db, 'invitations', invId, 'events'), orderBy('start_at', 'asc')));
+          events = evSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-            const wSnap = await getDocs(query(collection(db, 'invitations', docSnap.id, 'wishes'), orderBy('created_at', 'desc')));
-            wishes = wSnap.docs.map(d => ({
-              id: d.id,
-              ...d.data(),
-              created_at: d.data().created_at?.toDate ? d.data().created_at.toDate().toISOString() : new Date().toISOString()
-            }));
+          const wSnap = await getDocs(query(collection(db, 'invitations', invId, 'wishes'), orderBy('created_at', 'desc')));
+          wishes = wSnap.docs.map(d => ({
+            id: d.id,
+            ...d.data(),
+            created_at: d.data().created_at?.toDate ? d.data().created_at.toDate().toISOString() : new Date().toISOString()
+          }));
 
-            if (token) {
-              const gSnap = await getDocs(query(collection(db, 'invitations', docSnap.id, 'guests'), where('personal_token', '==', token)));
-              if (!gSnap.empty) {
-                guest = { id: gSnap.docs[0].id, ...gSnap.docs[0].data() };
-              }
+          if (token) {
+            const gSnap = await getDocs(query(collection(db, 'invitations', invId, 'guests'), where('personal_token', '==', token)));
+            if (!gSnap.empty) {
+              guest = { id: gSnap.docs[0].id, ...gSnap.docs[0].data() };
             }
           }
-        } catch (e) {
-          console.warn('Firebase public invitation fetch error:', e.message);
         }
+      } catch (e) {
+        console.warn('Firebase public invitation fetch error:', e.message);
       }
 
       if (!invitation) {
         // Fallback demo for previewing
         invitation = { ...demoInvitation, slug };
-        events = demoInvitation.events || [];
+      }
+
+      if (events.length === 0) {
+        events = invitation.data?.events || demoInvitation.events || [];
+      }
+      if (wishes.length === 0) {
         wishes = demoInvitation.wishes || [];
       }
 
@@ -678,11 +686,14 @@ const api = {
 
     if (cleanUrl === '/admin/musics') {
       const dataToSave = {};
+      let isFileProvided = false;
+      let fileObj = null;
+
       if (body instanceof FormData) {
         for (const [key, val] of body.entries()) {
-          if (val instanceof File) {
-            const url = await uploadToStorage(val, `audio/music_${Date.now()}`);
-            dataToSave.file_path = url;
+          if (val instanceof File && val.size > 0) {
+            isFileProvided = true;
+            fileObj = val;
           } else {
             dataToSave[key] = val;
           }
@@ -691,15 +702,40 @@ const api = {
         Object.assign(dataToSave, body);
       }
 
-      try {
-        await addDoc(collection(db, 'musics'), {
-          ...dataToSave,
-          created_at: serverTimestamp()
-        });
-      } catch (e) {
-        console.warn('Music save warning:', e.message);
+      if (isFileProvided && fileObj) {
+        try {
+          const sRef = storageRef(storage, `audio/music_${Date.now()}_${fileObj.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`);
+          const snapshot = await uploadBytes(sRef, fileObj);
+          dataToSave.file_path = await getDownloadURL(snapshot.ref);
+        } catch (err) {
+          console.warn('Storage upload error for music:', err);
+          throw new Error('Upload gagal: Firebase Storage belum aktif di Firebase Console untuk file MP3 > 1MB. Silakan gunakan opsi "Tautan / URL Audio Langsung" (misal link MP3 dari hosting/cloud) atau aktifkan Storage di Firebase Console.');
+        }
+      } else if (body.url || dataToSave.url) {
+        dataToSave.file_path = body.url || dataToSave.url;
       }
-      return { data: { status: 'success', message: 'Musik latar berhasil ditambahkan!' } };
+
+      if (!dataToSave.file_path) {
+        throw new Error('Berkas musik atau tautan URL MP3 wajib diisi.');
+      }
+
+      const docRef = await addDoc(collection(db, 'musics'), {
+        title: dataToSave.title || 'Untitled Music',
+        artist: dataToSave.artist || 'Unknown Artist',
+        category: dataToSave.category || 'wedding',
+        sort_order: Number(dataToSave.sort_order || 0),
+        file_path: dataToSave.file_path,
+        is_active: true,
+        created_at: serverTimestamp()
+      });
+
+      return {
+        data: {
+          status: 'success',
+          message: 'Musik baru berhasil ditambahkan ke pustaka!',
+          music: { id: docRef.id, ...dataToSave }
+        }
+      };
     }
 
     return { data: { status: 'success' } };
@@ -714,16 +750,24 @@ const api = {
       const invitationRef = doc(db, 'invitations', id);
 
       let currentData = demoInvitation.data;
+      let currentDoc = null;
       try {
         const snap = await getDoc(invitationRef);
-        if (snap.exists() && snap.data().data) {
-          currentData = getSafeData(snap.data().data);
+        if (snap.exists()) {
+          currentDoc = snap.data();
+          if (currentDoc.data) {
+            currentData = getSafeData(currentDoc.data);
+          }
         }
       } catch (e) {
         console.warn('Fetch current inv error:', e.message);
       }
 
-      const updatedFields = {};
+      const updatedFields = {
+        status: currentDoc?.status || 'published',
+        category: currentDoc?.category || 'wedding',
+        template_id: currentDoc?.template_id || '5'
+      };
       const updatedData = { ...currentData };
 
       if (body instanceof FormData) {
@@ -748,7 +792,7 @@ const api = {
               }
             }
           } else {
-            if (['opening', 'party1', 'party2', 'closing', 'story', 'gifts'].includes(key)) {
+            if (['opening', 'party1', 'party2', 'closing', 'story', 'gifts', 'gallery'].includes(key)) {
               try {
                 updatedData[key] = JSON.parse(val);
               } catch (e) {
@@ -757,24 +801,36 @@ const api = {
             } else if (['slug', 'template_id', 'theme_color'].includes(key)) {
               updatedFields[key] = val;
               if (key === 'theme_color') updatedData.theme_color = val;
+              if (key === 'template_id') updatedFields.template_id = val;
             } else if (['rsvp_enabled', 'wishes_enabled'].includes(key)) {
               updatedData[key] = val === '1' || val === true;
+            } else if (key === 'music_source') {
+              updatedData.music_source = val;
+            } else if (key === 'music_path' || key === 'custom_music_url') {
+              if (val) {
+                updatedData.music_path = val;
+                updatedData.music_url = val;
+              }
+            } else if (key === 'party1_photo_removed') {
+              if (val === '1' || val === true || val === 'true') {
+                updatedData.party1 = { ...(updatedData.party1 || {}), photo_path: '' };
+              }
+            } else if (key === 'party2_photo_removed') {
+              if (val === '1' || val === true || val === 'true') {
+                updatedData.party2 = { ...(updatedData.party2 || {}), photo_path: '' };
+              }
             } else if (key === 'events') {
               try {
                 const eventsList = JSON.parse(val);
+                updatedData.events = eventsList;
                 // Save events to subcollection
                 for (const ev of eventsList) {
-                  if (ev.id) {
-                    await setDoc(doc(db, 'invitations', id, 'events', ev.id), {
-                      ...ev,
-                      updated_at: serverTimestamp()
-                    }, { merge: true });
-                  } else {
-                    await addDoc(collection(db, 'invitations', id, 'events'), {
-                      ...ev,
-                      created_at: serverTimestamp()
-                    });
-                  }
+                  const evId = ev.id || 'event_' + Date.now();
+                  await setDoc(doc(db, 'invitations', id, 'events', evId), {
+                    ...ev,
+                    id: evId,
+                    updated_at: serverTimestamp()
+                  }, { merge: true });
                 }
               } catch (e) {
                 console.warn('Events save error:', e.message);
@@ -783,8 +839,18 @@ const api = {
           }
         }
       } else {
+        // Direct JSON object
         Object.assign(updatedFields, body);
         if (body.data) Object.assign(updatedData, body.data);
+        if (body.party1) updatedData.party1 = { ...(updatedData.party1 || {}), ...body.party1 };
+        if (body.party2) updatedData.party2 = { ...(updatedData.party2 || {}), ...body.party2 };
+        if (body.gallery) updatedData.gallery = body.gallery;
+        if (body.events) updatedData.events = body.events;
+        if (body.music_path) {
+          updatedData.music_path = body.music_path;
+          updatedData.music_url = body.music_path;
+        }
+        if (body.music_source) updatedData.music_source = body.music_source;
       }
 
       updatedFields.data = updatedData;

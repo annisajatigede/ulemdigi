@@ -11,14 +11,14 @@
               <span class="text-xs font-bold text-rose-600 uppercase">{{ invitation?.category || 'WEDDING' }}</span>
             </div>
             <h2 class="font-extrabold text-2xl text-stone-900 leading-tight mt-1">
-              Editor Undangan: <span class="text-rose-600">{{ safeData?.party1?.name || 'Momen' }}</span>
+              Editor Undangan: <span class="text-rose-600">{{ formData.party1?.name || safeData?.party1?.name || 'Momen' }}</span>
             </h2>
           </div>
 
           <div class="flex items-center gap-3">
-            <a :href="`/u/${invitation?.slug}?preview=1`" target="_blank"
+            <a :href="previewUrl" target="_blank"
                class="bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-1.5">
-              <span>Lihat Tab Baru ↗</span>
+              <span>Buka Tab Baru ↗</span>
             </a>
             <button type="button" @click="saveChanges" :disabled="saving"
                     class="bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl shadow-md shadow-rose-600/25 transition-all disabled:opacity-50">
@@ -84,7 +84,7 @@
               <button type="button" @click="activeTab = 'galeri'"
                       :class="activeTab === 'galeri' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'"
                       class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors">
-                6. Galeri ({{ (safeData.gallery || []).length }}/{{ maxPhotos }})
+                6. Galeri ({{ galleryList.length }}/{{ maxPhotos }})
               </button>
               <button type="button" @click="activeTab = 'amplop'"
                       :class="activeTab === 'amplop' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'"
@@ -138,12 +138,12 @@
                   </div>
                 </div>
 
+                <!-- Musik Latar -->
                 <div>
                   <div class="flex items-center justify-between mb-2">
                     <label class="block text-xs font-bold text-stone-700">Musik Latar Belakang</label>
-                    <span v-if="safeData.music_path" class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-                      <span>✓ Aktif:</span>
-                      <span class="font-bold text-stone-800">{{ safeData.music_title || 'Audio Aktif' }}</span>
+                    <span v-if="musicSource !== 'none'" class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                      <span>✓ Musik Aktif</span>
                     </span>
                     <span v-else class="text-[11px] font-semibold text-stone-400">🔇 Tanpa Musik</span>
                   </div>
@@ -159,20 +159,20 @@
                     <button type="button" @click="musicSource = 'custom'"
                             :class="musicSource === 'custom' ? 'bg-white shadow text-rose-600 font-bold' : 'text-stone-600 hover:text-stone-900 font-medium'"
                             class="flex-1 py-2 rounded-xl text-center transition-all flex items-center justify-center gap-1.5">
-                      <span>📤</span>
-                      <span>Upload Sendiri</span>
+                      <span>🔗</span>
+                      <span>Link / Kustom</span>
                     </button>
                     <button type="button" @click="musicSource = 'none'"
                             :class="musicSource === 'none' ? 'bg-white shadow text-stone-900 font-bold' : 'text-stone-600 hover:text-stone-900 font-medium'"
                             class="flex-1 py-2 rounded-xl text-center transition-all flex items-center justify-center gap-1.5">
                       <span>🔇</span>
-                      <span>Tanpa Musik</span>
+                      <span>Hening</span>
                     </button>
                   </div>
 
                   <!-- 1. PRESET MUSICS (Disediakan Admin) -->
                   <div v-show="musicSource === 'preset'" class="space-y-3">
-                    <p class="text-[11px] text-stone-500">Pilih musik pengiring yang telah disiapkan admin untuk tema acara Anda. Klik tombol putar untuk mendengarkan cuplikan audio:</p>
+                    <p class="text-[11px] text-stone-500">Pilih musik pengiring yang telah disiapkan admin untuk tema acara Anda:</p>
 
                     <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
                       <label v-for="music in presetMusics" :key="music.id"
@@ -195,7 +195,6 @@
                             </div>
                           </div>
 
-                          <!-- Audio Preview Button -->
                           <button type="button" @click.stop="previewMusic(music.audio_url || music.file_path)"
                                   class="shrink-0 p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                                   :class="playingMusicUrl === (music.audio_url || music.file_path) ? 'bg-rose-600 text-white shadow-sm' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'">
@@ -207,19 +206,21 @@
                     </div>
                   </div>
 
-                  <!-- 2. CUSTOM UPLOAD -->
+                  <!-- 2. CUSTOM UPLOAD / URL -->
                   <div v-show="musicSource === 'custom'" class="space-y-3">
-                    <div class="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-2">
-                      <p class="text-xs text-stone-700 font-semibold">Unggah berkas lagu Anda sendiri:</p>
-                      <input type="file" ref="customMusicFile" accept="audio/*"
-                             class="block w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100">
-                      <p class="text-[11px] text-stone-400">Format yang didukung: MP3, WAV, OGG, M4A. Maksimal 15MB.</p>
+                    <div class="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
+                      <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Tautan / URL Berkas MP3</label>
+                        <input type="url" v-model="customMusicUrl" placeholder="https://example.com/audio/lagu.mp3"
+                               class="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl border border-stone-200">
+                        <p class="text-[11px] text-stone-400 mt-1">Masukkan URL langsung ke file MP3 Anda (Google Drive, Dropbox, Cloud Storage, dll).</p>
+                      </div>
 
-                      <div v-if="safeData.music_path && safeData.music_source === 'custom'" class="mt-3 pt-3 border-t border-stone-200 flex items-center justify-between text-xs">
-                        <span class="text-emerald-700 font-medium truncate max-w-[200px]">✓ Berkas: {{ safeData.music_title }}</span>
-                        <button type="button" @click="previewMusic(safeData.music_url)"
+                      <div v-if="customMusicUrl" class="pt-2 flex items-center justify-between text-xs">
+                        <span class="text-emerald-700 font-medium truncate max-w-[200px]">✓ Link terisi</span>
+                        <button type="button" @click="previewMusic(customMusicUrl)"
                                 class="px-3 py-1 rounded-lg text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50">
-                          <span v-if="playingMusicUrl !== safeData.music_url">▶ Tes Putar</span>
+                          <span v-if="playingMusicUrl !== customMusicUrl">▶ Tes Putar</span>
                           <span v-else>⏸ Jeda</span>
                         </button>
                       </div>
@@ -272,10 +273,10 @@
                   {{ isKhitan ? 'Informasi Anak yang Dikhitan & Orang Tua' : (isGeneral ? 'Informasi Penyelenggara' : 'Informasi Kedua Mempelai') }}
                 </h3>
 
-                <!-- Pihak 1 -->
+                <!-- Pihak 1 (Mempelai Pria/Wanita) -->
                 <div class="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-4">
                   <h4 class="text-xs font-extrabold uppercase tracking-wider text-rose-600">
-                    {{ isKhitan ? 'Profil Anak' : (isGeneral ? 'Profil Penyelenggara' : 'Mempelai Wanita') }}
+                    {{ isKhitan ? 'Profil Anak' : (isGeneral ? 'Profil Penyelenggara' : 'Mempelai Pria') }}
                   </h4>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -296,7 +297,7 @@
                       <label class="block text-xs font-bold text-stone-700 mb-1">Urutan Kelahiran</label>
                       <input type="text" v-model="formData.party1.child_order"
                              class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200"
-                             placeholder="Contoh: Putri pertama dari">
+                             placeholder="Contoh: Putra pertama dari">
                     </div>
                     <div>
                       <label class="block text-xs font-bold text-stone-700 mb-1">Nama Orang Tua</label>
@@ -306,20 +307,32 @@
                     </div>
                   </div>
 
+                  <!-- Upload & Preview Foto Pihak 1 -->
                   <div>
                     <label class="block text-xs font-bold text-stone-700 mb-1">Foto Profil</label>
-                    <input type="file" ref="party1PhotoFile" accept="image/*" class="text-xs text-stone-500">
-                    <div v-if="safeData.party1?.photo_path" class="mt-2 flex items-center gap-2">
-                      <img :src="safeData.party1.photo_path" class="w-10 h-10 object-cover rounded-full border">
-                      <span class="text-[11px] text-stone-500">Foto terpasang</span>
+                    
+                    <div v-if="party1PhotoPreview || formData.party1.photo_path || safeData.party1?.photo_path" 
+                         class="mb-3 flex items-center gap-3 p-3 bg-white rounded-2xl border border-stone-200">
+                      <img :src="party1PhotoPreview || formData.party1.photo_path || safeData.party1?.photo_path" 
+                           class="w-14 h-14 object-cover rounded-xl border border-rose-200 shadow-sm">
+                      <div>
+                        <span class="text-xs font-bold text-stone-800 block">Foto Terpasang</span>
+                        <button type="button" @click="removeParty1Photo" 
+                                class="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline mt-0.5">
+                          ✕ Hapus Foto
+                        </button>
+                      </div>
                     </div>
+
+                    <input type="file" ref="party1PhotoInput" accept="image/*" @change="onParty1PhotoChange"
+                           class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer">
                   </div>
                 </div>
 
                 <!-- Pihak 2 (Hanya jika bukan general) -->
                 <div v-if="!isGeneral" class="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-4">
                   <h4 class="text-xs font-extrabold uppercase tracking-wider text-rose-600">
-                    {{ isKhitan ? 'Keluarga / Orang Tua' : 'Mempelai Pria' }}
+                    {{ isKhitan ? 'Keluarga / Orang Tua' : 'Mempelai Wanita' }}
                   </h4>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -348,13 +361,25 @@
                     </div>
                   </div>
 
+                  <!-- Upload & Preview Foto Pihak 2 -->
                   <div>
                     <label class="block text-xs font-bold text-stone-700 mb-1">Foto Profil</label>
-                    <input type="file" ref="party2PhotoFile" accept="image/*" class="text-xs text-stone-500">
-                    <div v-if="safeData.party2?.photo_path" class="mt-2 flex items-center gap-2">
-                      <img :src="safeData.party2.photo_path" class="w-10 h-10 object-cover rounded-full border">
-                      <span class="text-[11px] text-stone-500">Foto terpasang</span>
+                    
+                    <div v-if="party2PhotoPreview || formData.party2.photo_path || safeData.party2?.photo_path" 
+                         class="mb-3 flex items-center gap-3 p-3 bg-white rounded-2xl border border-stone-200">
+                      <img :src="party2PhotoPreview || formData.party2.photo_path || safeData.party2?.photo_path" 
+                           class="w-14 h-14 object-cover rounded-xl border border-rose-200 shadow-sm">
+                      <div>
+                        <span class="text-xs font-bold text-stone-800 block">Foto Terpasang</span>
+                        <button type="button" @click="removeParty2Photo" 
+                                class="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline mt-0.5">
+                          ✕ Hapus Foto
+                        </button>
+                      </div>
                     </div>
+
+                    <input type="file" ref="party2PhotoInput" accept="image/*" @change="onParty2PhotoChange"
+                           class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer">
                   </div>
                 </div>
               </div>
@@ -403,17 +428,17 @@
                   </div>
 
                   <div>
-                    <label class="block text-xs font-semibold text-stone-700 mb-1">Nama Gedung / Tempat *</label>
+                    <label class="block text-xs font-semibold text-stone-700 mb-1">Nama Tempat / Gedung *</label>
                     <input type="text" v-model="event.venue_name" required
                            class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200"
-                           placeholder="Contoh: Masjid Agung / Hotel Grand Santika">
+                           placeholder="Contoh: Gedung Graha Asri">
                   </div>
 
                   <div>
-                    <label class="block text-xs font-semibold text-stone-700 mb-1">Alamat Lengkap</label>
-                    <input type="text" v-model="event.address"
-                           class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200"
-                           placeholder="Jl. Merdeka No. 45, Jakarta Selatan">
+                    <label class="block text-xs font-semibold text-stone-700 mb-1">Alamat Lengkap *</label>
+                    <textarea v-model="event.address" rows="2" required
+                              class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200"
+                              placeholder="Jl. Mawar No. 123..."></textarea>
                   </div>
 
                   <div>
@@ -451,30 +476,39 @@
                 </div>
               </div>
 
-              <!-- 6. TAB GALERI FOTO -->
+              <!-- 6. TAB GALERI FOTO (MULTI UPLOAD + HAPUS) -->
               <div v-show="activeTab === 'galeri'" class="space-y-6">
                 <div class="flex items-center justify-between">
                   <div>
-                    <h3 class="text-base font-bold text-stone-900">Galeri Foto</h3>
-                    <p class="text-xs text-stone-500">Batas paket: {{ maxPhotos }} foto.</p>
+                    <h3 class="text-base font-bold text-stone-900">Galeri Foto Kenangan</h3>
+                    <p class="text-xs text-stone-500">Kapasitas paket: {{ galleryList.length }} / {{ maxPhotos }} foto.</p>
                   </div>
                 </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-stone-700 mb-1">Unggah Foto Baru (Bisa Multi-Pilih)</label>
-                  <input type="file" ref="galleryPhotosFiles" multiple accept="image/*" class="text-xs text-stone-500">
-                  <p class="text-[11px] text-stone-400 mt-1">Maksimal 3MB per foto. Format: JPG, PNG, WEBP.</p>
+                <div class="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-2">
+                  <label class="block text-xs font-bold text-stone-700">Unggah Foto (Bisa Pilih Banyak Sekaligus)</label>
+                  <input type="file" ref="galleryFilesInput" multiple accept="image/*" @change="onGalleryFilesChange"
+                         class="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-stone-800 cursor-pointer">
+                  <p class="text-[11px] text-stone-400">Pilih satu atau beberapa foto sekaligus. Gambar akan dioptimasi otomatis agar memuat super cepat.</p>
                 </div>
 
-                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-3">
-                  <div v-for="(gItem, gIdx) in safeData.gallery || []" :key="gIdx"
-                       class="aspect-square rounded-2xl overflow-hidden border border-stone-200 relative group">
-                    <img :src="gItem.url || gItem" class="w-full h-full object-cover">
-                    <label class="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-white text-xs font-bold">
-                      <input type="checkbox" :value="gIdx" v-model="removeGalleryIndexes" class="mr-1">
-                      Hapus
-                    </label>
+                <!-- Grid Preview Foto Galeri -->
+                <div v-if="galleryList.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  <div v-for="(item, idx) in galleryList" :key="idx" 
+                       class="relative group rounded-2xl overflow-hidden border border-stone-200 aspect-square bg-stone-100 shadow-sm">
+                    <img :src="item.url || item" class="w-full h-full object-cover">
+                    
+                    <!-- Overlay Tombol Hapus -->
+                    <div class="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                      <button type="button" @click="removeGalleryItem(idx)" 
+                              class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1 transition-transform transform hover:scale-105">
+                        <span>🗑</span> Hapus
+                      </button>
+                    </div>
                   </div>
+                </div>
+                <div v-else class="text-center py-8 text-stone-400 text-xs italic bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+                  Belum ada foto di galeri. Silakan pilih foto di atas.
                 </div>
               </div>
 
@@ -530,51 +564,56 @@
                   <label class="block text-xs font-bold text-stone-700 mb-1">Nama Penutup / Tanda Tangan</label>
                   <input type="text" v-model="formData.closing.signature"
                          class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200"
-                         placeholder="Contoh: Keluarga Besar Kami">
+                         placeholder="Contoh: Alex & Olivia Beserta Keluarga Besar">
                 </div>
               </div>
 
-              <div class="mt-8 pt-6 border-t border-stone-200 flex justify-end">
+              <div class="pt-6 border-t border-stone-200 flex items-center justify-between">
+                <button type="button" @click="reloadIframe" class="text-xs font-semibold text-stone-500 hover:text-stone-800 flex items-center gap-1">
+                  <span>🔄</span> Refresh Preview
+                </button>
                 <button type="submit" :disabled="saving"
-                        class="bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold px-8 py-3 rounded-2xl shadow-lg shadow-rose-600/30 transition-all disabled:opacity-50">
-                  <span v-if="saving">Menyimpan Semua Data...</span>
-                  <span v-else>Simpan Semua Perubahan Undangan</span>
+                        class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm px-8 py-3 rounded-2xl shadow-lg shadow-rose-600/25 transition-all disabled:opacity-50">
+                  <span v-if="saving">Menyimpan...</span>
+                  <span v-else>Simpan Perubahan Undangan</span>
                 </button>
               </div>
+
             </form>
           </div>
 
-          <!-- RIGHT COLUMN: MOBILE FRAME LIVE PREVIEW -->
-          <div class="lg:col-span-5 sticky top-28">
-            <div class="text-center mb-3 flex items-center justify-between">
-              <span class="text-xs font-extrabold uppercase text-stone-500 tracking-wider">Live Mobile Preview</span>
-              <button type="button" @click="reloadIframe"
-                      class="text-xs text-rose-600 hover:text-rose-800 font-bold flex items-center gap-1">
-                <span>🔄 Muat Ulang Pratinjau</span>
-              </button>
-            </div>
-
-            <!-- Smartphone Bezel Mockup -->
-            <div class="mx-auto w-[320px] sm:w-[360px] h-[640px] bg-stone-900 rounded-[45px] p-3 shadow-2xl border-4 border-stone-800 relative flex flex-col overflow-hidden">
-              <!-- Speaker & Camera notch -->
-              <div class="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-4 bg-stone-950 rounded-full z-20 flex items-center justify-center">
-                <div class="w-2.5 h-2.5 rounded-full bg-stone-800 mr-2"></div>
-                <div class="w-8 h-1 rounded-full bg-stone-800"></div>
+          <!-- RIGHT COLUMN: LIVE MOBILE PREVIEW -->
+          <div class="lg:col-span-5 sticky top-24">
+            <div class="bg-white rounded-3xl border border-stone-200 shadow-xl p-4 flex flex-col items-center">
+              <div class="w-full flex items-center justify-between pb-3 px-2 border-b border-stone-100 text-xs">
+                <div class="flex items-center gap-2 font-bold text-stone-800">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Live Mobile Preview</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" @click="reloadIframe" class="p-1 rounded hover:bg-stone-100 text-stone-500 text-xs">
+                    🔄 Refresh
+                  </button>
+                </div>
               </div>
 
-              <!-- Iframe Screen -->
-              <div class="w-full h-full rounded-[35px] overflow-hidden bg-white relative pt-5">
-                <iframe ref="previewIframe"
-                        :src="previewUrl"
-                        class="w-full h-full border-0"></iframe>
+              <!-- Device Mockup Frame -->
+              <div class="w-full max-w-[340px] aspect-[9/19] bg-stone-900 rounded-[44px] p-3 shadow-2xl mt-4 border-4 border-stone-800 relative">
+                <div class="w-24 h-4 bg-stone-800 rounded-full mx-auto mb-2"></div>
+                <div class="w-full h-[calc(100%-24px)] rounded-[32px] overflow-hidden bg-white">
+                  <iframe
+                    ref="previewIframe"
+                    :src="previewUrl"
+                    class="w-full h-full border-0"
+                    title="Live Preview Undangan"
+                  ></iframe>
+                </div>
               </div>
-
-              <!-- Home bar indicator -->
-              <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-28 h-1 bg-stone-600 rounded-full z-20"></div>
             </div>
           </div>
 
         </div>
+
       </div>
     </div>
   </div>
@@ -585,6 +624,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../api/client';
 import { notifySuccess, alertError } from '../../utils/alert';
+import { processImageToBase64 } from '../../utils/image';
 
 const route = useRoute();
 const invitationId = route.params.id;
@@ -602,18 +642,27 @@ const presetMusics = ref([]);
 const activeTab = ref('dasar');
 const musicSource = ref('preset');
 const selectedPresetId = ref(null);
+const customMusicUrl = ref('');
 const playingMusicUrl = ref(null);
 let audioPlayer = null;
 
 const events = ref([]);
 const stories = ref([]);
 const gifts = ref([]);
-const removeGalleryIndexes = ref([]);
 
-const customMusicFile = ref(null);
-const party1PhotoFile = ref(null);
-const party2PhotoFile = ref(null);
-const galleryPhotosFiles = ref(null);
+// Photo Previews & Management
+const party1PhotoInput = ref(null);
+const party1PhotoPreview = ref(null);
+const party1PhotoRemoved = ref(false);
+
+const party2PhotoInput = ref(null);
+const party2PhotoPreview = ref(null);
+const party2PhotoRemoved = ref(false);
+
+// Gallery List
+const galleryFilesInput = ref(null);
+const galleryList = ref([]);
+
 const previewIframe = ref(null);
 
 const formData = ref({
@@ -623,8 +672,8 @@ const formData = ref({
   rsvp_enabled: true,
   wishes_enabled: true,
   opening: { title: '', greeting: '', quote: '', quote_source: '' },
-  party1: { name: '', full_name: '', child_order: '', parents: '', instagram: '' },
-  party2: { name: '', full_name: '', child_order: '', parents: '', instagram: '' },
+  party1: { name: '', full_name: '', child_order: '', parents: '', photo_path: '' },
+  party2: { name: '', full_name: '', child_order: '', parents: '', photo_path: '' },
   closing: { text: '', signature: '' }
 });
 
@@ -632,7 +681,72 @@ const isKhitan = computed(() => invitation.value?.category === 'khitan');
 const isGeneral = computed(() => invitation.value?.category === 'general');
 const maxPhotos = computed(() => invitation.value?.plan?.max_photos || 15);
 const maxEvents = computed(() => invitation.value?.plan?.max_events || 3);
-const previewUrl = computed(() => invitation.value?.slug ? `/u/${invitation.value.slug}?preview=1` : '');
+const previewUrl = computed(() => {
+  const currentSlug = formData.value.slug || invitation.value?.slug || invitationId;
+  return `/u/${currentSlug}?preview=1`;
+});
+
+// Photo Handlers
+const onParty1PhotoChange = async (e) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    try {
+      party1PhotoPreview.value = await processImageToBase64(file, 600, 600, 0.82);
+      party1PhotoRemoved.value = false;
+    } catch (err) {
+      console.warn('Failed to process photo 1:', err);
+    }
+  }
+};
+
+const removeParty1Photo = () => {
+  party1PhotoPreview.value = '';
+  party1PhotoRemoved.value = true;
+  formData.value.party1.photo_path = '';
+  if (safeData.value.party1) safeData.value.party1.photo_path = '';
+  if (party1PhotoInput.value) party1PhotoInput.value.value = '';
+};
+
+const onParty2PhotoChange = async (e) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    try {
+      party2PhotoPreview.value = await processImageToBase64(file, 600, 600, 0.82);
+      party2PhotoRemoved.value = false;
+    } catch (err) {
+      console.warn('Failed to process photo 2:', err);
+    }
+  }
+};
+
+const removeParty2Photo = () => {
+  party2PhotoPreview.value = '';
+  party2PhotoRemoved.value = true;
+  formData.value.party2.photo_path = '';
+  if (safeData.value.party2) safeData.value.party2.photo_path = '';
+  if (party2PhotoInput.value) party2PhotoInput.value.value = '';
+};
+
+// Gallery Handlers
+const onGalleryFilesChange = async (e) => {
+  const files = Array.from(e.target.files || []);
+  for (const file of files) {
+    if (galleryList.value.length >= maxPhotos.value) break;
+    try {
+      const base64 = await processImageToBase64(file, 800, 800, 0.80);
+      if (base64) {
+        galleryList.value.push({ url: base64 });
+      }
+    } catch (err) {
+      console.warn('Failed to process gallery file:', err);
+    }
+  }
+  if (galleryFilesInput.value) galleryFilesInput.value.value = '';
+};
+
+const removeGalleryItem = (index) => {
+  galleryList.value.splice(index, 1);
+};
 
 const fetchEditorData = async () => {
   try {
@@ -655,6 +769,10 @@ const fetchEditorData = async () => {
     formData.value.party2 = { ...safeData.value.party2 };
     formData.value.closing = { ...safeData.value.closing };
 
+    // Gallery List
+    galleryList.value = (safeData.value.gallery || []).map(g => ({ url: g.url || g }));
+
+    // Events
     events.value = (res.data.eventsData || []).map(ev => ({
       title: ev.title || '',
       start_at: ev.start_at || '',
@@ -669,6 +787,7 @@ const fetchEditorData = async () => {
     gifts.value = [...(safeData.value.gifts || [])];
 
     musicSource.value = safeData.value.music_source || (safeData.value.music_path ? 'preset' : 'preset');
+    customMusicUrl.value = safeData.value.music_url || safeData.value.music_path || '';
     
     // Find preset music ID if match
     if (safeData.value.music_path) {
@@ -742,7 +861,8 @@ const previewMusic = (url) => {
 
 const reloadIframe = () => {
   if (previewIframe.value) {
-    previewIframe.value.src = previewIframe.value.src;
+    const targetSlug = formData.value.slug || invitation.value?.slug || invitationId;
+    previewIframe.value.src = `/u/${targetSlug}?preview=1&_t=${Date.now()}`;
   }
 };
 
@@ -752,58 +872,81 @@ const saveChanges = async () => {
     errorMessage.value = null;
     statusMessage.value = null;
 
-    const body = new FormData();
-    body.append('slug', formData.value.slug);
-    body.append('template_id', formData.value.template_id);
-    body.append('theme_color', formData.value.theme_color);
-    body.append('music_source', musicSource.value);
-    if (selectedPresetId.value) {
-      body.append('preset_music_id', selectedPresetId.value);
-    }
-    body.append('rsvp_enabled', formData.value.rsvp_enabled ? '1' : '0');
-    body.append('wishes_enabled', formData.value.wishes_enabled ? '1' : '0');
+    let finalParty1Photo = formData.value.party1.photo_path || safeData.value.party1?.photo_path || '';
+    if (party1PhotoPreview.value) finalParty1Photo = party1PhotoPreview.value;
+    if (party1PhotoRemoved.value) finalParty1Photo = '';
 
-    // JSON objects / arrays
-    body.append('opening', JSON.stringify(formData.value.opening));
-    body.append('party1', JSON.stringify(formData.value.party1));
-    body.append('party2', JSON.stringify(formData.value.party2));
-    body.append('closing', JSON.stringify(formData.value.closing));
-    body.append('events', JSON.stringify(events.value));
-    body.append('story', JSON.stringify(stories.value));
-    body.append('gifts', JSON.stringify(gifts.value));
+    let finalParty2Photo = formData.value.party2.photo_path || safeData.value.party2?.photo_path || '';
+    if (party2PhotoPreview.value) finalParty2Photo = party2PhotoPreview.value;
+    if (party2PhotoRemoved.value) finalParty2Photo = '';
 
-    // Removed gallery items
-    removeGalleryIndexes.value.forEach(idx => {
-      body.append('remove_gallery_index[]', idx);
-    });
-
-    // File uploads
-    if (party1PhotoFile.value?.files?.[0]) {
-      body.append('party1_photo', party1PhotoFile.value.files[0]);
-    }
-    if (party2PhotoFile.value?.files?.[0]) {
-      body.append('party2_photo', party2PhotoFile.value.files[0]);
-    }
-    if (customMusicFile.value?.files?.[0]) {
-      body.append('custom_music', customMusicFile.value.files[0]);
-    }
-    if (galleryPhotosFiles.value?.files) {
-      Array.from(galleryPhotosFiles.value.files).forEach(file => {
-        body.append('gallery_photos', file);
-      });
+    let finalMusicPath = safeData.value.music_path || '';
+    if (musicSource.value === 'preset') {
+      const p = presetMusics.value.find(m => m.id == selectedPresetId.value);
+      if (p) finalMusicPath = p.audio_url || p.file_path;
+    } else if (musicSource.value === 'custom') {
+      finalMusicPath = customMusicUrl.value;
+    } else {
+      finalMusicPath = '';
     }
 
-    const res = await api.put(`/editor/${invitationId}`, body, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const payload = {
+      slug: formData.value.slug,
+      template_id: formData.value.template_id,
+      theme_color: formData.value.theme_color,
+      music_source: musicSource.value,
+      music_path: finalMusicPath,
+      rsvp_enabled: formData.value.rsvp_enabled,
+      wishes_enabled: formData.value.wishes_enabled,
+      data: {
+        theme_color: formData.value.theme_color,
+        music_source: musicSource.value,
+        music_path: finalMusicPath,
+        music_url: finalMusicPath,
+        rsvp_enabled: formData.value.rsvp_enabled,
+        wishes_enabled: formData.value.wishes_enabled,
+        opening: formData.value.opening,
+        party1: {
+          ...formData.value.party1,
+          photo_path: finalParty1Photo
+        },
+        party2: {
+          ...formData.value.party2,
+          photo_path: finalParty2Photo
+        },
+        closing: formData.value.closing,
+        events: events.value,
+        story: stories.value,
+        gifts: gifts.value,
+        gallery: galleryList.value
+      },
+      party1: {
+        ...formData.value.party1,
+        photo_path: finalParty1Photo
+      },
+      party2: {
+        ...formData.value.party2,
+        photo_path: finalParty2Photo
+      },
+      gallery: galleryList.value,
+      events: events.value
+    };
+
+    const res = await api.put(`/editor/${invitationId}`, payload);
 
     statusMessage.value = res.data.message || 'Perubahan undangan berhasil disimpan!';
     notifySuccess('Perubahan Berhasil Disimpan!');
-    removeGalleryIndexes.value = [];
-    await fetchEditorData();
+
+    // Update local state
+    if (res.data.invitation) {
+      invitation.value = res.data.invitation;
+      safeData.value = res.data.invitation.data || payload.data;
+    }
+
+    // Auto reload Live Mobile Preview
     reloadIframe();
   } catch (err) {
-    const msg = err.response?.data?.message || 'Gagal menyimpan perubahan undangan.';
+    const msg = err.response?.data?.message || err.message || 'Gagal menyimpan perubahan undangan.';
     errorMessage.value = msg;
     await alertError('Gagal Menyimpan', msg);
   } finally {

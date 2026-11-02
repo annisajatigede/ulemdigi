@@ -99,39 +99,69 @@
           <!-- MODAL TAMBAH MUSIK -->
           <div v-if="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 p-4">
             <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
-              <h4 class="text-base font-bold text-stone-900 mb-4">Unggah Berkas Audio Musik Baru</h4>
+              <h4 class="text-base font-bold text-stone-900 mb-2">Tambah Musik Latar Baru</h4>
+              <p class="text-xs text-stone-500 mb-4">Tambahkan lagu favorit untuk melengkapi pustaka undangan digital.</p>
+              
               <form @submit.prevent="createMusic" class="space-y-4">
                 <div>
                   <label class="block text-xs font-bold text-stone-700 mb-1">Judul Lagu / Musik *</label>
-                  <input type="text" v-model="newMusic.title" required class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200" placeholder="Contoh: Beautiful in White">
+                  <input type="text" v-model="newMusic.title" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200" placeholder="Contoh: Beautiful in White">
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-stone-700 mb-1">Artis / Penyanyi / Musisi</label>
-                  <input type="text" v-model="newMusic.artist" class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200" placeholder="Contoh: Shane Filan">
+                  <input type="text" v-model="newMusic.artist" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200" placeholder="Contoh: Shane Filan">
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-stone-700 mb-1">Kategori Acara *</label>
-                  <select v-model="newMusic.category" required class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200">
-                    <option value="wedding">Pernikahan (Wedding)</option>
-                    <option value="khitan">Khitanan (Khitan)</option>
-                    <option value="general">Acara Umum (General)</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-stone-700 mb-1">Urutan Tampil (Sort Order)</label>
-                  <input type="number" v-model.number="newMusic.sort_order" min="0" class="w-full text-xs px-3 py-2 rounded-xl border border-stone-200">
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-stone-700 mb-1">Berkas Audio *</label>
-                  <input type="file" ref="musicFileInput" required accept="audio/*" class="w-full text-xs text-stone-500">
-                  <p class="text-[11px] text-stone-400 mt-1">Format: MP3, WAV, OGG, M4A. Maksimal 15MB.</p>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Kategori Acara *</label>
+                    <select v-model="newMusic.category" required class="w-full text-xs px-3 py-2.5 rounded-xl border border-stone-200">
+                      <option value="wedding">Pernikahan (Wedding)</option>
+                      <option value="khitan">Khitanan (Khitan)</option>
+                      <option value="general">Acara Umum (General)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Urutan (Sort Order)</label>
+                    <input type="number" v-model.number="newMusic.sort_order" min="0" class="w-full text-xs px-3 py-2.5 rounded-xl border border-stone-200">
+                  </div>
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2">
-                  <button type="button" @click="showAddModal = false" class="px-4 py-2 text-xs font-bold text-stone-500">Batal</button>
-                  <button type="submit" :disabled="submitting" class="bg-rose-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md disabled:opacity-50">
-                    <span v-if="submitting">Mengunggah...</span>
-                    <span v-else>Simpan ke Pustaka</span>
+                <!-- Metode Input Audio: URL atau File -->
+                <div class="pt-2 border-t border-stone-100">
+                  <label class="block text-xs font-bold text-stone-800 mb-2">Metode Masukan Audio *</label>
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button type="button" @click="audioSourceType = 'url'"
+                            class="py-2 text-xs font-bold rounded-xl border transition-all text-center"
+                            :class="audioSourceType === 'url' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                      🔗 Tautan URL MP3
+                    </button>
+                    <button type="button" @click="audioSourceType = 'file'"
+                            class="py-2 text-xs font-bold rounded-xl border transition-all text-center"
+                            :class="audioSourceType === 'file' ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm' : 'border-stone-200 text-stone-600 hover:bg-stone-50'">
+                      📁 Unggah Berkas MP3
+                    </button>
+                  </div>
+
+                  <!-- 1. URL MODE -->
+                  <div v-if="audioSourceType === 'url'" class="space-y-2">
+                    <input type="url" v-model="newMusic.url"
+                           class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 font-mono"
+                           placeholder="https://example.com/audio/lagu.mp3">
+                    <p class="text-[11px] text-stone-400">Masukkan tautan langsung file MP3 dari hosting, Google Drive, Dropbox, atau CDN.</p>
+                  </div>
+
+                  <!-- 2. FILE UPLOAD MODE -->
+                  <div v-else class="space-y-2">
+                    <input type="file" ref="musicFileInput" accept="audio/*" class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-stone-800 cursor-pointer">
+                    <p class="text-[11px] text-stone-400">Format: MP3, WAV, OGG. Maksimal 15MB.</p>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t border-stone-100">
+                  <button type="button" @click="showAddModal = false" class="px-4 py-2 text-xs font-bold text-stone-500 hover:text-stone-700">Batal</button>
+                  <button type="submit" :disabled="submitting" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md disabled:opacity-50 transition-all">
+                    <span v-if="submitting">Memproses...</span>
+                    <span v-else>Simpan Musik</span>
                   </button>
                 </div>
               </form>
@@ -216,8 +246,9 @@ const musics = ref([]);
 const categoryFilter = ref('');
 
 const showAddModal = ref(false);
+const audioSourceType = ref('url');
 const musicFileInput = ref(null);
-const newMusic = ref({ title: '', artist: '', category: 'wedding', sort_order: 0 });
+const newMusic = ref({ title: '', artist: '', category: 'wedding', sort_order: 0, url: '' });
 
 const activeCount = computed(() => musics.value.filter(m => m.is_active).length);
 const weddingCount = computed(() => musics.value.filter(m => m.category === 'wedding').length);
@@ -250,7 +281,19 @@ const createMusic = async () => {
     body.append('category', newMusic.value.category);
     body.append('sort_order', newMusic.value.sort_order);
 
-    if (musicFileInput.value?.files?.[0]) {
+    if (audioSourceType.value === 'url') {
+      if (!newMusic.value.url) {
+        await alertError('Wajib Diisi', 'Silakan masukkan tautan / URL file MP3.');
+        submitting.value = false;
+        return;
+      }
+      body.append('url', newMusic.value.url);
+    } else {
+      if (!musicFileInput.value?.files?.[0]) {
+        await alertError('Wajib Diisi', 'Silakan pilih berkas audio MP3 untuk diunggah.');
+        submitting.value = false;
+        return;
+      }
       body.append('music_file', musicFileInput.value.files[0]);
     }
 
@@ -259,11 +302,12 @@ const createMusic = async () => {
     });
 
     showAddModal.value = false;
-    newMusic.value = { title: '', artist: '', category: 'wedding', sort_order: 0 };
+    newMusic.value = { title: '', artist: '', category: 'wedding', sort_order: 0, url: '' };
+    if (musicFileInput.value) musicFileInput.value.value = '';
     await alertSuccess('Berhasil!', 'Musik baru berhasil ditambahkan ke pustaka.');
     await fetchMusics();
   } catch (err) {
-    await alertError('Gagal Mengunggah', err.response?.data?.message || 'Gagal mengunggah musik');
+    await alertError('Gagal Menambahkan Musik', err.response?.data?.message || err.message || 'Gagal menambahkan musik');
   } finally {
     submitting.value = false;
   }

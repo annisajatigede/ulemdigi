@@ -131,8 +131,36 @@ async function handleLogin() {
       const errs = err.response.data.errors;
       errorMessage.value = Object.values(errs).flat().join(', ');
     } else {
-      errorMessage.value = err.response?.data?.message || 'Gagal login. Periksa email dan password.';
+      errorMessage.value = err.response?.data?.message || err.message || 'Gagal login. Periksa email dan password.';
     }
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleGoogleLogin() {
+  errorMessage.value = '';
+  loading.value = true;
+  try {
+    const res = await authStore.loginGoogle();
+    const redirect = route.query.redirect;
+    if (redirect) {
+      router.push(redirect);
+    } else if (res.user.role === 'admin') {
+      router.push('/admin');
+    } else {
+      router.push('/dashboard');
+    }
+  } catch (err) {
+    console.error('Google login error:', err);
+    if (err.code === 'auth/popup-closed-by-user') {
+      return;
+    }
+    if (err.code === 'auth/unauthorized-domain') {
+      errorMessage.value = 'Domain ini belum diizinkan di Firebase Auth. Buka Firebase Console -> Authentication -> Settings -> Authorized Domains.';
+      return;
+    }
+    errorMessage.value = err.message || 'Gagal login dengan akun Google.';
   } finally {
     loading.value = false;
   }
