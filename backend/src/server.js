@@ -43,6 +43,61 @@ app.use('/templates', express.static(path.join(publicPath, 'templates')));
 app.use('/storage', express.static(path.join(publicPath, 'storage')));
 app.use('/images', express.static(path.join(publicPath, 'images')));
 
+// Dynamic uploaded files stream from DB cache fallback (for Serverless Vercel)
+app.get(
+  [
+    '/uploads/:filename',
+    '/audio/:filename',
+    '/templates/thumbnails/:filename',
+    '/storage/invitations/:invId/:filename',
+    '/storage/:filename'
+  ],
+  async (req, res, next) => {
+    try {
+      const filename = req.params.filename;
+      if (!filename) return next();
+
+      // 1. If static file exists on disk:
+      const possibleDiskPaths = [
+        path.join(__dirname, '../public/uploads', filename),
+        path.join(__dirname, '../public/audio', filename),
+        path.join(__dirname, '../public/templates/thumbnails', filename),
+        path.join(__dirname, '../public/images', filename),
+        path.join(__dirname, '../public/storage', filename),
+      ];
+      for (const p of possibleDiskPaths) {
+        if (fs.existsSync(p)) {
+          return res.sendFile(p);
+        }
+      }
+
+      // 2. Query MySQL cache table
+      const cached = await prisma.cache.findUnique({
+        where: { key: `file:${filename}` },
+      });
+
+      if (cached && cached.value) {
+        try {
+          const parsed = JSON.parse(cached.value);
+          if (parsed && parsed.data) {
+            const buffer = Buffer.from(parsed.data, 'base64');
+            res.setHeader('Content-Type', parsed.mimetype || 'application/octet-stream');
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return res.send(buffer);
+          }
+        } catch (parseErr) {
+          console.error('Error parsing cached file payload:', parseErr);
+        }
+      }
+
+      return next();
+    } catch (err) {
+      console.error('Error streaming uploaded file from cache:', err);
+      return next();
+    }
+  }
+);
+
 // Dynamic WhatsApp / Open Graph Preview for Public Invitations
 app.get(['/u/:slug', '/u/:slug/:token'], async (req, res, next) => {
   try {

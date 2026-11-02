@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { authMiddleware, optionalAuthMiddleware } = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
-const upload = require('../middlewares/uploadMiddleware');
+const { upload, autoSaveUploads } = require('../middlewares/uploadMiddleware');
 
 // Controllers
 const authController = require('../controllers/authController');
@@ -58,7 +58,7 @@ const editorUploadFields = upload.fields([
 ]);
 
 router.get('/editor/:id', authMiddleware, (req, res) => editorController.edit(req, res));
-router.put('/editor/:id', authMiddleware, editorUploadFields, (req, res) => editorController.update(req, res));
+router.put('/editor/:id', authMiddleware, editorUploadFields, autoSaveUploads, (req, res) => editorController.update(req, res));
 router.post('/editor/:id/toggle-publish', authMiddleware, (req, res) => editorController.togglePublish(req, res));
 
 // 7. Guests Management & RSVP
@@ -82,13 +82,13 @@ router.delete('/admin/users/:id', (req, res) => adminUserController.destroy(req,
 
 // Admin Templates
 router.get('/admin/templates', (req, res) => adminTemplateController.index(req, res));
-router.post('/admin/templates', upload.single('thumbnail'), (req, res) => adminTemplateController.store(req, res));
-router.put('/admin/templates/:id', upload.single('thumbnail'), (req, res) => adminTemplateController.update(req, res));
+router.post('/admin/templates', upload.single('thumbnail'), autoSaveUploads, (req, res) => adminTemplateController.store(req, res));
+router.put('/admin/templates/:id', upload.single('thumbnail'), autoSaveUploads, (req, res) => adminTemplateController.update(req, res));
 router.delete('/admin/templates/:id', (req, res) => adminTemplateController.destroy(req, res));
 
 // Admin Musics Library
 router.get('/admin/musics', (req, res) => adminMusicController.index(req, res));
-router.post('/admin/musics', upload.single('music_file'), (req, res) => adminMusicController.store(req, res));
+router.post('/admin/musics', upload.single('music_file'), autoSaveUploads, (req, res) => adminMusicController.store(req, res));
 router.post('/admin/musics/:id/toggle', (req, res) => adminMusicController.toggle(req, res));
 router.delete('/admin/musics/:id', (req, res) => adminMusicController.destroy(req, res));
 
@@ -102,8 +102,14 @@ router.get('/admin/transactions/export', (req, res) => adminTransactionControlle
 
 // Admin Settings
 router.get('/admin/settings', (req, res) => adminSettingController.index(req, res));
-router.post('/admin/settings', upload.fields([{ name: 'logo', maxCount: 1 }]), (req, res) =>
-  adminSettingController.update(req, res)
+router.post(
+  '/admin/settings',
+  upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'favicon', maxCount: 1 },
+  ]),
+  autoSaveUploads,
+  (req, res) => adminSettingController.update(req, res)
 );
 
 module.exports = router;

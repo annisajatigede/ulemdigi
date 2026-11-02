@@ -60,6 +60,15 @@ class AdminSettingController {
         });
       }
 
+      if (req.files && req.files.favicon && req.files.favicon[0]) {
+        const faviconUrl = `/uploads/${req.files.favicon[0].filename}`;
+        await prisma.settings.upsert({
+          where: { key: 'favicon_url' },
+          update: { value: faviconUrl, updated_at: new Date() },
+          create: { key: 'favicon_url', value: faviconUrl, created_at: new Date(), updated_at: new Date() },
+        });
+      }
+
       return res.json({ message: 'Pengaturan website berhasil disimpan!' });
     } catch (error) {
       console.error('adminSetting update error:', error);
