@@ -42,6 +42,7 @@ app.use('/storage', express.static(path.join(publicPath, 'storage')));
 
 // Mount API routes
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // Root health check / info (only for /api-status)
 app.get('/api-status', (req, res) => {
@@ -89,6 +90,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Kawinan.id Backend Server is running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Kawinan.id Backend Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

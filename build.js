@@ -20,7 +20,19 @@ try {
     env: process.env
   });
 
-  // 2. Build frontend
+  // 2. Generate Prisma Client if prisma schema exists
+  const backendDir = path.join(__dirname, 'backend');
+  const prismaSchema = path.join(backendDir, 'prisma', 'schema.prisma');
+  if (fs.existsSync(prismaSchema)) {
+    console.log('⚡ [Build] Generating Prisma Client...');
+    execSync(`npx --yes prisma generate --schema="${prismaSchema}"`, {
+      cwd: backendDir,
+      stdio: 'inherit',
+      env: process.env
+    });
+  }
+
+  // 3. Build frontend
   console.log('🔨 [Build] Compiling frontend (Vite)...');
   execSync(`${npmCmd} run build`, {
     cwd: frontendDir,
